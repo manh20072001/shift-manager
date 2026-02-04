@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -14,62 +14,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* [Giữ nguyên toàn bộ CSS cũ của bạn ở đây] */
-        :root { --primary-color: #89CFF0; --primary-dark: #5ca0c4; --text-color: #333; --bg-color: #f2f4f8; --card-bg: white; --border-color: #ddd; --sunday-color: #ff4d4d; --saturday-color: #3366ff; --shift-bg: #e3f2fd; --shift-text: #1565c0; --nav-inactive: #999; --calc-clear: #a5a5a5; --calc-operator: #ff9f0a; --calc-number: #333333; }
+        :root { --primary-color: #89CFF0; --primary-dark: #5ca0c4; --text-color: #333; --bg-color: #f2f4f8; --card-bg: white; --border-color: #ddd; --sunday-color: #ff4d4d; --saturday-color: #3366ff; --shift-bg: #e3f2fd; --shift-text: #1565c0; --nav-inactive: #999; }
         body.dark-mode { --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0; --border-color: #333; --shift-bg: #2c3e50; --shift-text: #89CFF0; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .container { flex: 1; overflow-y: auto; padding-bottom: 80px; max-width: 450px; margin: 0 auto; width: 100%; background-color: var(--card-bg); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.3s; }
+        header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); }
         .calendar-day-head { text-align: center; padding: 10px 0; font-weight: bold; font-size: 0.8rem; background: #f8f9fa; }
         body.dark-mode .calendar-day-head { background: #2a2a2a; }
         .calendar-day-head:nth-child(1) { color: var(--sunday-color); }
         .calendar-day-head:nth-child(7) { color: var(--saturday-color); }
-        .calendar-day { min-height: 80px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 5px; cursor: pointer; }
+        .calendar-day { min-height: 85px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 5px; cursor: pointer; position: relative; }
         .calendar-day:nth-child(7n) { border-right: none; }
         .day-number { font-weight: bold; font-size: 0.9rem; }
-        .selected-day { background-color: #e3f2fd !important; outline: 2px solid var(--primary-color); }
+        .selected-day { background-color: #e3f2fd !important; outline: 2px solid var(--primary-color); z-index: 1; }
         body.dark-mode .selected-day { background-color: #2c3e50 !important; }
-        .shift-info { background: var(--shift-bg); color: var(--shift-text); font-size: 0.6rem; padding: 2px; border-radius: 3px; margin-top: 3px; }
-        .wage-info { font-size: 0.6rem; color: #2e7d32; font-weight: bold; }
+        .shift-info { background: var(--shift-bg); color: var(--shift-text); font-size: 0.6rem; padding: 2px; border-radius: 3px; margin-top: 3px; text-align: center; }
+        .wage-info { font-size: 0.65rem; color: #2e7d32; font-weight: bold; text-align: center; margin-top: 2px; }
         body.dark-mode .wage-info { color: #81c784; }
         .daily-detail-card { margin: 15px; padding: 15px; border-radius: 12px; background: #f8f9fa; border: 1px solid var(--border-color); }
         body.dark-mode .daily-detail-card { background: #2a2a2a; }
-        .detail-memo { margin-top: 10px; font-size: 0.9rem; color: #555; font-style: italic; white-space: pre-wrap; border-top: 1px dashed #ccc; padding-top: 8px; }
-        .settings-card { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .detail-memo { margin-top: 10px; font-size: 0.9rem; color: #666; font-style: italic; white-space: pre-wrap; border-top: 1px dashed #ccc; padding-top: 8px; }
+        .settings-card { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); }
         body.dark-mode .settings-card { background: #1e1e1e; }
-        .profile-container { display: flex; align-items: center; gap: 15px; }
-        .avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
-        .setting-input { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); width: 100px; text-align: right; background: var(--card-bg); color: var(--text-color); }
-        .calculator-container { padding: 15px; background: #000; border-radius: 20px; margin: 10px; }
-        #calcDisplay { width: 100%; height: 60px; font-size: 2rem; text-align: right; border: none; background: transparent; color: white; outline: none; }
-        .calculator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .calc-btn { height: 55px; border-radius: 28px; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
-        .btn-number { background: var(--calc-number); color: white; }
-        .btn-operator { background: var(--calc-operator); color: white; }
-        .btn-special { background: var(--calc-clear); color: black; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-input { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); width: 110px; text-align: right; background: var(--card-bg); color: var(--text-color); }
         nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; height: 65px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); text-decoration: none; font-size: 0.7rem; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); text-decoration: none; font-size: 0.75rem; }
         .nav-item.active { color: var(--primary-color); }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: var(--card-bg); margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: var(--card-bg); margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; }
         .form-group { margin-bottom: 15px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); font-size: 1rem; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-save { background: var(--primary-color); color: white; }
         .btn-delete { background: #ff4d4d; color: white; }
         .btn-cancel { background: #eee; color: #333; }
         .hidden { display: none; }
-        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(18px); }
     </style>
 </head>
 <body>
@@ -82,163 +69,133 @@
 
     <div id="calendar-screen" class="screen">
         <div class="calendar-header">
-            <button id="prevMonth" class="btn-cancel" style="padding: 5px 15px;">&lt;</button>
-            <div id="calendarTitle" style="font-weight: bold;">2026/02</div>
-            <button id="nextMonth" class="btn-cancel" style="padding: 5px 15px;">&gt;</button>
+            <button onclick="changeMonth(-1)" class="btn-cancel" style="padding: 5px 15px;">&lt;</button>
+            <div id="calendarTitle" style="font-weight: bold;"></div>
+            <button onclick="changeMonth(1)" class="btn-cancel" style="padding: 5px 15px;">&gt;</button>
+        </div>
+        <div class="calendar-grid">
+            <div class="calendar-day-head">CN</div><div class="calendar-day-head">T2</div><div class="calendar-day-head">T3</div><div class="calendar-day-head">T4</div><div class="calendar-day-head">T5</div><div class="calendar-day-head">T6</div><div class="calendar-day-head">T7</div>
         </div>
         <div id="calendarGrid" class="calendar-grid"></div>
         <div class="daily-detail-card">
             <div id="selectedDateLabel" style="font-weight: bold; margin-bottom: 5px; color: var(--primary-color);"></div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="dayShiftText"></span>
-                <button class="btn-save" style="padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;" onclick="openModalFromDetail()" data-i18n="editMemo">Sửa</button>
+                <button class="btn-save" style="padding: 8px 15px; border-radius: 20px; font-size: 0.8rem;" onclick="openModal()">Sửa / Ghi chú</button>
             </div>
             <div id="dayMemoText" class="detail-memo"></div>
         </div>
     </div>
 
     <div id="stats-screen" class="screen hidden" style="padding: 15px;">
-        <h3 data-i18n="monthlyStats">Thống kê</h3>
-        <div id="statsContent" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border-color);"></div>
-        <div class="calculator-container">
-            <input type="text" id="calcDisplay" readonly placeholder="0">
-            <div class="calculator-grid">
-                <button class="calc-btn btn-special" onclick="appendCalc('C')">C</button>
-                <button class="calc-btn btn-special" onclick="appendCalc('+/-')">+/-</button>
-                <button class="calc-btn btn-special" onclick="appendCalc('%')">%</button>
-                <button class="calc-btn btn-operator" onclick="appendCalc('/')">÷</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('7')">7</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('8')">8</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('9')">9</button>
-                <button class="calc-btn btn-operator" onclick="appendCalc('*')">×</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('4')">4</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('5')">5</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('6')">6</button>
-                <button class="calc-btn btn-operator" onclick="appendCalc('-')">−</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('1')">1</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('2')">2</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('3')">3</button>
-                <button class="calc-btn btn-operator" onclick="appendCalc('+')">+</button>
-                <button class="calc-btn btn-number" style="grid-column: span 2; text-align: left; padding-left: 25px;" onclick="appendCalc('0')">0</button>
-                <button class="calc-btn btn-number" onclick="appendCalc('.')">.</button>
-                <button class="calc-btn btn-operator" onclick="calculateResult()">=</button>
-            </div>
-        </div>
+        <h3 data-i18n="monthlyStats">Thống kê tháng</h3>
+        <div id="statsContent" style="background: var(--primary-color); color:white; padding: 20px; border-radius: 12px; margin-bottom: 15px;"></div>
     </div>
 
     <div id="settings-screen" class="screen hidden" style="padding: 20px;">
         <h3 data-i18n="settings">Cài đặt</h3>
         <div class="settings-card">
-            <div class="profile-container">
-                <img src="https://via.placeholder.com/60" id="avatarImg" class="avatar-img">
-                <div class="profile-info">
-                    <input type="text" id="profileName" placeholder="Tên" onchange="saveProfile()" style="border:none; border-bottom:1px solid #ddd; width:100%;">
-                </div>
-            </div>
-        </div>
-        <div class="settings-card">
-            <div class="setting-row">
-                <span data-i18n="language">Ngôn ngữ</span>
-                <select id="langSelect" class="setting-input" style="width: auto;">
-                    <option value="ja">日本語</option><option value="en">English</option><option value="vi">Tiếng Việt</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span data-i18n="darkMode">Chế độ tối</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
             <div class="setting-row">
                 <span data-i18n="hourlyWage">Lương/giờ cơ bản</span>
                 <input type="number" id="defaultWage" class="setting-input" onchange="saveSettings()">
             </div>
             <div class="setting-row">
-                <span data-i18n="nightWage">Ca đêm (+%)</span>
+                <span data-i18n="nightWage">Phụ cấp ca đêm (%)</span>
                 <input type="number" id="nightWage" class="setting-input" onchange="saveSettings()">
+            </div>
+            <div class="setting-row">
+                <span data-i18n="overtimeWage">Hệ số tăng ca (VD: 1.25)</span>
+                <input type="number" id="overtimeWage" step="0.01" class="setting-input" onchange="saveSettings()">
+            </div>
+            <div class="setting-row">
+                <span data-i18n="nightStart">Bắt đầu ca đêm</span>
+                <input type="time" id="nightStart" class="setting-input" onchange="saveSettings()">
+            </div>
+            <div class="setting-row">
+                <span data-i18n="nightEnd">Kết thúc ca đêm</span>
+                <input type="time" id="nightEnd" class="setting-input" onchange="saveSettings()">
+            </div>
+        </div>
+        <div class="settings-card">
+            <div class="setting-row">
+                <span>Ngôn ngữ / 言語</span>
+                <select id="langSelect" class="setting-input" onchange="changeLang(this.value)">
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ja">日本語</option>
+                </select>
             </div>
         </div>
     </div>
 </div>
 
 <nav>
-    <a href="#" class="nav-item active" onclick="switchScreen('calendar')"><i class="fas fa-calendar-alt"></i><span data-i18n="navCalendar">Lịch</span></a>
-    <a href="#" class="nav-item" onclick="switchScreen('stats')"><i class="fas fa-calculator"></i><span data-i18n="navStats">Thống kê</span></a>
-    <a href="#" class="nav-item" onclick="switchScreen('settings')"><i class="fas fa-cog"></i><span data-i18n="navSettings">Cài đặt</span></a>
+    <a href="javascript:void(0)" class="nav-item active" onclick="switchScreen('calendar', this)"><i class="fas fa-calendar-alt"></i><span data-i18n="navCalendar">Lịch</span></a>
+    <a href="javascript:void(0)" class="nav-item" onclick="switchScreen('stats', this)"><i class="fas fa-chart-bar"></i><span data-i18n="navStats">Thống kê</span></a>
+    <a href="javascript:void(0)" class="nav-item" onclick="switchScreen('settings', this)"><i class="fas fa-cog"></i><span data-i18n="navSettings">Cài đặt</span></a>
 </nav>
 
 <div id="shiftModal" class="modal">
     <div class="modal-content">
         <h3 id="modalDate" style="text-align:center;"></h3>
-        <div class="form-group">
-            <label data-i18n="startTime">Bắt đầu</label>
-            <input type="time" id="startTimeInput">
-        </div>
-        <div class="form-group">
-            <label data-i18n="endTime">Kết thúc</label>
-            <input type="time" id="endTimeInput">
-        </div>
-        <div class="form-group">
-            <label data-i18n="breakTime">Nghỉ (phút)</label>
-            <input type="number" id="breakTimeInput">
-        </div>
-        <div class="form-group">
-            <label data-i18n="memo">Ghi chú</label>
-            <textarea id="memoInput" rows="3"></textarea>
-        </div>
+        <div class="form-group"><label data-i18n="startTime">Bắt đầu</label><input type="time" id="startTimeInput"></div>
+        <div class="form-group"><label data-i18n="endTime">Kết thúc</label><input type="time" id="endTimeInput"></div>
+        <div class="form-group"><label data-i18n="breakTime">Nghỉ (phút)</label><input type="number" id="breakTimeInput"></div>
+        <div class="form-group"><label data-i18n="memo">Ghi chú</label><textarea id="memoInput" rows="3"></textarea></div>
         <div class="btn-group">
-            <button class="btn btn-save" id="saveShift" data-i18n="save">Lưu</button>
-            <button class="btn btn-delete" id="deleteShift" data-i18n="delete">Xóa</button>
-            <button class="btn btn-cancel" onclick="document.getElementById('shiftModal').style.display='none'" data-i18n="cancel">Hủy</button>
+            <button class="btn btn-save" onclick="saveShift()">Lưu</button>
+            <button class="btn btn-delete" onclick="deleteShift()">Xóa</button>
+            <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Register Service Worker for PWA
+    // PWA Registration
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(reg => console.log('SW Registered!'));
-        });
+        window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
     }
 
     let shiftData = JSON.parse(localStorage.getItem('shiftData')) || {};
-    let appSettings = JSON.parse(localStorage.getItem('appSettings')) || { defaultWage: 1100, nightWage: 25, overtimeWage: 1.25, nightStart: '22:00', nightEnd: '05:00' };
-    let currentLang = localStorage.getItem('language') || 'vi';
+    let appSettings = JSON.parse(localStorage.getItem('appSettings')) || { 
+        defaultWage: 1100, nightWage: 25, overtimeWage: 1.25, 
+        nightStart: '22:00', nightEnd: '05:00', lang: 'vi' 
+    };
+
     let currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth();
     let selectedDate = new Date().toISOString().split('T')[0];
 
     const translations = {
-        vi: { appTitle: "Quản lý ca làm", navCalendar: "Lịch", navStats: "Thống kê", navSettings: "Cài đặt", settings: "Cài đặt", monthlyStats: "Thống kê tháng", hourlyWage: "Lương cơ bản", startTime: "Bắt đầu", endTime: "Kết thúc", breakTime: "Nghỉ (phút)", save: "Lưu", delete: "Xóa", cancel: "Hủy", totalWage: "Tổng lương", totalHours: "Tổng giờ", darkMode: "Chế độ tối", language: "Ngôn ngữ", noShift: "Chưa có ca làm", editMemo: "Sửa", memo: "Ghi chú", nightWage: "Ca đêm (+%)" },
-        ja: { appTitle: "シフト管理", navCalendar: "カレンダー", navStats: "統計", navSettings: "設定", settings: "設定", monthlyStats: "月間統計", hourlyWage: "時給", startTime: "開始", endTime: "終了", breakTime: "休憩", save: "保存", delete: "削除", cancel: "キャンセル", totalWage: "合計給与", totalHours: "合計時間", darkMode: "ダークモード", language: "言語", noShift: "シフトなし", editMemo: "編集", memo: "メモ", nightWage: "深夜手当" },
-        en: { appTitle: "Shift Manager", navCalendar: "Calendar", navStats: "Stats", navSettings: "Settings", settings: "Settings", monthlyStats: "Stats", hourlyWage: "Base Wage", startTime: "Start", endTime: "End", breakTime: "Break", save: "Save", delete: "Delete", cancel: "Cancel", totalWage: "Total Wage", totalHours: "Total Hours", darkMode: "Dark Mode", language: "Language", noShift: "No shift", editMemo: "Edit", memo: "Memo", nightWage: "Night Bonus" }
+        vi: { appTitle: "Quản lý ca làm", navCalendar: "Lịch", navStats: "Thống kê", navSettings: "Cài đặt", settings: "Cài đặt", monthlyStats: "Thống kê tháng", hourlyWage: "Lương cơ bản", nightWage: "Phụ cấp đêm (%)", overtimeWage: "Hệ số tăng ca", nightStart: "Bắt đầu đêm", nightEnd: "Kết thúc đêm", startTime: "Bắt đầu", endTime: "Kết thúc", breakTime: "Nghỉ (phút)", save: "Lưu", delete: "Xóa", cancel: "Hủy", totalWage: "Tổng lương", totalHours: "Tổng giờ", noShift: "Nghỉ", memo: "Ghi chú" },
+        ja: { appTitle: "シフト管理", navCalendar: "カレンダー", navStats: "統計", navSettings: "設定", settings: "設定", monthlyStats: "月間統計", hourlyWage: "時給", nightWage: "深夜手当(%)", overtimeWage: "残業手当", nightStart: "深夜開始", nightEnd: "深夜終了", startTime: "開始", endTime: "終了", breakTime: "休憩", save: "保存", delete: "削除", cancel: "キャンセル", totalWage: "合計給与", totalHours: "合計時間", noShift: "休み", memo: "メモ" }
     };
 
-    function applyTranslations() {
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
-        });
-    }
+    function timeToMin(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
 
     function calculateExactWage(s) {
-        const start = s.start.split(':').map(Number), end = s.end.split(':').map(Number);
-        let sMin = start[0]*60 + start[1], eMin = end[0]*60 + end[1];
-        if(eMin < sMin) eMin += 1440;
+        let sMin = timeToMin(s.start), eMin = timeToMin(s.end);
+        if (eMin < sMin) eMin += 1440;
+        const totalMin = eMin - sMin - s.break;
+        if (totalMin <= 0) return 0;
+
+        const nStartMin = timeToMin(appSettings.nightStart);
+        const nEndMin = timeToMin(appSettings.nightEnd) + (timeToMin(appSettings.nightEnd) < nStartMin ? 1440 : 0);
         
-        const totalMin = eMin - sMin;
-        const nStart = 1320, nEnd = 300; // 22:00 to 05:00
-        let nMin = 0;
-        for(let m=sMin; m<eMin; m++) {
+        let nightMin = 0;
+        for (let m = sMin; m < eMin; m++) {
             let curr = m % 1440;
-            if(curr >= nStart || curr < nEnd) nMin++;
+            let checkEnd = timeToMin(appSettings.nightEnd);
+            if (timeToMin(appSettings.nightStart) > checkEnd) {
+                if (curr >= timeToMin(appSettings.nightStart) || curr < checkEnd) nightMin++;
+            } else {
+                if (curr >= timeToMin(appSettings.nightStart) && curr < checkEnd) nightMin++;
+            }
         }
-        
-        const netTotal = totalMin - s.break;
-        const netNight = nMin * (netTotal / totalMin);
-        const basePay = netTotal * (appSettings.defaultWage / 60);
-        const nightExtra = netNight * (appSettings.defaultWage * (appSettings.nightWage/100) / 60);
+        // Giảm trừ thời gian nghỉ vào ca đêm (ước tính tỉ lệ)
+        const nightRatio = nightMin / (eMin - sMin);
+        const netNightMin = nightMin - (s.break * nightRatio);
+
+        const basePay = (totalMin / 60) * appSettings.defaultWage;
+        const nightExtra = (netNightMin / 60) * appSettings.defaultWage * (appSettings.nightWage / 100);
         return Math.round(basePay + nightExtra);
     }
 
@@ -248,6 +205,7 @@
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         document.getElementById('calendarTitle').innerText = `${currentYear}/${currentMonth + 1}`;
+        document.getElementById('monthDisplay').innerText = `${currentYear}/${currentMonth + 1}`;
 
         for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
         for (let d = 1; d <= daysInMonth; d++) {
@@ -256,7 +214,7 @@
             dayDiv.className = 'calendar-day' + (dateStr === selectedDate ? ' selected-day' : '');
             dayDiv.innerHTML = `<div class="day-number">${d}</div>`;
             if (shiftData[dateStr]) {
-                dayDiv.innerHTML += `<div class="shift-info">${shiftData[dateStr].start}</div>`;
+                dayDiv.innerHTML += `<div class="shift-info">${shiftData[dateStr].start}-${shiftData[dateStr].end}</div>`;
                 dayDiv.innerHTML += `<div class="wage-info">¥${calculateExactWage(shiftData[dateStr]).toLocaleString()}</div>`;
             }
             dayDiv.onclick = () => { selectedDate = dateStr; renderCalendar(); updateDetail(); };
@@ -271,35 +229,40 @@
             document.getElementById('dayShiftText').innerText = `${s.start} - ${s.end} (¥${calculateExactWage(s).toLocaleString()})`;
             document.getElementById('dayMemoText').innerText = s.memo || "";
         } else {
-            document.getElementById('dayShiftText').innerText = translations[currentLang].noShift;
+            document.getElementById('dayShiftText').innerText = translations[appSettings.lang].noShift;
             document.getElementById('dayMemoText').innerText = "";
         }
     }
 
-    function switchScreen(id) {
+    function switchScreen(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById(id + '-screen').classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+        el.classList.add('active');
         if(id === 'stats') updateStats();
     }
 
     function updateStats() {
         let totalW = 0, totalH = 0;
+        const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}`;
         Object.keys(shiftData).forEach(d => {
-            if(d.startsWith(`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`)) {
+            if(d.startsWith(monthPrefix)) {
                 totalW += calculateExactWage(shiftData[d]);
                 const s = shiftData[d];
-                const start = s.start.split(':').map(Number), end = s.end.split(':').map(Number);
-                let dur = (end[0]*60+end[1]) - (start[0]*60+start[1]);
+                let dur = timeToMin(s.end) - timeToMin(s.start);
                 if(dur < 0) dur += 1440;
                 totalH += (dur - s.break)/60;
             }
         });
-        document.getElementById('statsContent').innerHTML = `<b>${translations[currentLang].totalWage}:</b> ¥${totalW.toLocaleString()}<br><b>${translations[currentLang].totalHours}:</b> ${totalH.toFixed(2)}h`;
+        document.getElementById('statsContent').innerHTML = `
+            <div style="font-size:0.9rem; opacity:0.9">${translations[appSettings.lang].totalHours}</div>
+            <div style="font-size:1.8rem; font-weight:bold; margin-bottom:10px">${totalH.toFixed(2)} h</div>
+            <div style="font-size:0.9rem; opacity:0.9">${translations[appSettings.lang].totalWage}</div>
+            <div style="font-size:1.8rem; font-weight:bold">¥ ${totalW.toLocaleString()}</div>
+        `;
     }
 
-    function openModalFromDetail() {
+    function openModal() {
         const s = shiftData[selectedDate] || { start: "09:00", end: "17:00", break: 60, memo: "" };
         document.getElementById('modalDate').innerText = selectedDate;
         document.getElementById('startTimeInput').value = s.start;
@@ -309,41 +272,64 @@
         document.getElementById('shiftModal').style.display = 'block';
     }
 
-    document.getElementById('saveShift').onclick = () => {
+    function closeModal() { document.getElementById('shiftModal').style.display = 'none'; }
+
+    function saveShift() {
         shiftData[selectedDate] = {
             start: document.getElementById('startTimeInput').value,
             end: document.getElementById('endTimeInput').value,
-            break: parseInt(document.getElementById('breakTimeInput').value),
+            break: parseInt(document.getElementById('breakTimeInput').value) || 0,
             memo: document.getElementById('memoInput').value
         };
         localStorage.setItem('shiftData', JSON.stringify(shiftData));
-        document.getElementById('shiftModal').style.display = 'none';
-        renderCalendar(); updateDetail();
-    };
+        closeModal(); renderCalendar(); updateDetail();
+    }
 
-    document.getElementById('deleteShift').onclick = () => { delete shiftData[selectedDate]; localStorage.setItem('shiftData', JSON.stringify(shiftData)); document.getElementById('shiftModal').style.display = 'none'; renderCalendar(); updateDetail(); };
-    
-    function appendCalc(v) { const d = document.getElementById('calcDisplay'); if(v==='C') d.value=''; else d.value+=v; }
-    function calculateResult() { const d = document.getElementById('calcDisplay'); try { d.value = eval(d.value.replace(/×/g,'*').replace(/÷/g,'/')); } catch { d.value='Error'; } }
+    function deleteShift() {
+        delete shiftData[selectedDate];
+        localStorage.setItem('shiftData', JSON.stringify(shiftData));
+        closeModal(); renderCalendar(); updateDetail();
+    }
 
-    window.onload = () => {
-        document.getElementById('langSelect').value = currentLang;
-        document.getElementById('langSelect').onchange = (e) => { currentLang = e.target.value; localStorage.setItem('language', currentLang); applyTranslations(); renderCalendar(); };
-        document.getElementById('darkModeToggle').onchange = (e) => { document.body.classList.toggle('dark-mode', e.target.checked); localStorage.setItem('dark-mode', e.target.checked); };
-        if(localStorage.getItem('dark-mode') === 'true') { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
-        document.getElementById('defaultWage').value = appSettings.defaultWage;
-        document.getElementById('nightWage').value = appSettings.nightWage;
-        
-        document.getElementById('prevMonth').onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); };
-        document.getElementById('nextMonth').onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); };
-
-        applyTranslations(); renderCalendar(); updateDetail();
-    };
     function saveSettings() {
         appSettings.defaultWage = parseInt(document.getElementById('defaultWage').value);
         appSettings.nightWage = parseInt(document.getElementById('nightWage').value);
+        appSettings.overtimeWage = parseFloat(document.getElementById('overtimeWage').value);
+        appSettings.nightStart = document.getElementById('nightStart').value;
+        appSettings.nightEnd = document.getElementById('nightEnd').value;
         localStorage.setItem('appSettings', JSON.stringify(appSettings));
+        renderCalendar();
     }
+
+    function changeMonth(step) {
+        currentMonth += step;
+        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar();
+    }
+
+    function changeLang(l) {
+        appSettings.lang = l;
+        localStorage.setItem('appSettings', JSON.stringify(appSettings));
+        location.reload();
+    }
+
+    window.onload = () => {
+        document.getElementById('defaultWage').value = appSettings.defaultWage;
+        document.getElementById('nightWage').value = appSettings.nightWage;
+        document.getElementById('overtimeWage').value = appSettings.overtimeWage;
+        document.getElementById('nightStart').value = appSettings.nightStart;
+        document.getElementById('nightEnd').value = appSettings.nightEnd;
+        document.getElementById('langSelect').value = appSettings.lang;
+        
+        // Apply translations
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[appSettings.lang][key]) el.innerText = translations[appSettings.lang][key];
+        });
+
+        renderCalendar(); updateDetail();
+    };
 </script>
 </body>
 </html>
