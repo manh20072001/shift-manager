@@ -1,0 +1,17 @@
+{
+  "name": "Shift Manager",
+  "short_name": "ShiftMgr",
+  "description": "Quản lý ca làm và tính lương chính xác",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#89CFF0",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2370/2370264.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
