@@ -1,58 +1,150 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title data-i18n="appTitle">Shift Manager</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#89CFF0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2370/2370264.png">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary-color: #89CFF0; --primary-dark: #5ca0c4; --text-color: #333; --bg-color: #f2f4f8; --card-bg: white; --border-color: #ddd; --sunday-color: #ff4d4d; --saturday-color: #3366ff; --shift-bg: #e3f2fd; --shift-text: #1565c0; --nav-inactive: #999; }
-        body.dark-mode { --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0; --border-color: #333; --shift-bg: #2c3e50; --shift-text: #89CFF0; }
+        :root {
+            --primary-color: #89CFF0;
+            --primary-dark: #5ca0c4;
+            --text-color: #333;
+            --bg-color: #f2f4f8;
+            --card-bg: white;
+            --border-color: #ddd;
+            --sunday-color: #ff4d4d;
+            --saturday-color: #3366ff;
+            --shift-bg: #e3f2fd;
+            --shift-text: #1565c0;
+            --nav-inactive: #999;
+            --calc-clear: #a5a5a5;
+            --calc-operator: #ff9f0a;
+            --calc-number: #333333;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --shift-bg: #2c3e50;
+            --shift-text: #89CFF0;
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .container { flex: 1; overflow-y: auto; padding-bottom: 80px; max-width: 450px; margin: 0 auto; width: 100%; background-color: var(--card-bg); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden;
+        }
+
+        .container {
+            flex: 1; overflow-y: auto;
+            padding-bottom: 80px;
+            max-width: 450px; margin: 0 auto; width: 100%;
+            background-color: var(--card-bg);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white; padding: 15px;
+            text-align: center; font-size: 1.2rem; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        /* --- CALENDAR --- */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); }
         .calendar-day-head { text-align: center; padding: 10px 0; font-weight: bold; font-size: 0.8rem; background: #f8f9fa; }
         body.dark-mode .calendar-day-head { background: #2a2a2a; }
         .calendar-day-head:nth-child(1) { color: var(--sunday-color); }
         .calendar-day-head:nth-child(7) { color: var(--saturday-color); }
-        .calendar-day { min-height: 85px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 5px; cursor: pointer; position: relative; }
+        .calendar-day { min-height: 80px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 5px; cursor: pointer; }
         .calendar-day:nth-child(7n) { border-right: none; }
         .day-number { font-weight: bold; font-size: 0.9rem; }
-        .selected-day { background-color: #e3f2fd !important; outline: 2px solid var(--primary-color); z-index: 1; }
+        .is-today { background-color: #fff9c4 !important; }
+        body.dark-mode .is-today { background-color: #4a4a35 !important; }
+        .selected-day { background-color: #e3f2fd !important; outline: 2px solid var(--primary-color); }
         body.dark-mode .selected-day { background-color: #2c3e50 !important; }
-        .shift-info { background: var(--shift-bg); color: var(--shift-text); font-size: 0.6rem; padding: 2px; border-radius: 3px; margin-top: 3px; text-align: center; }
-        .wage-info { font-size: 0.65rem; color: #2e7d32; font-weight: bold; text-align: center; margin-top: 2px; }
+        .shift-info { background: var(--shift-bg); color: var(--shift-text); font-size: 0.6rem; padding: 2px; border-radius: 3px; margin-top: 3px; }
+        .wage-info { font-size: 0.6rem; color: #2e7d32; font-weight: bold; }
         body.dark-mode .wage-info { color: #81c784; }
+
+        /* --- DAILY DETAIL --- */
         .daily-detail-card { margin: 15px; padding: 15px; border-radius: 12px; background: #f8f9fa; border: 1px solid var(--border-color); }
         body.dark-mode .daily-detail-card { background: #2a2a2a; }
-        .detail-memo { margin-top: 10px; font-size: 0.9rem; color: #666; font-style: italic; white-space: pre-wrap; border-top: 1px dashed #ccc; padding-top: 8px; }
-        .settings-card { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+        .detail-memo { margin-top: 10px; font-size: 0.9rem; color: #555; font-style: italic; white-space: pre-wrap; border-top: 1px dashed #ccc; padding-top: 8px; }
+        body.dark-mode .detail-memo { color: #aaa; }
+
+        /* --- SETTINGS STYLES --- */
+        .settings-section-title {
+            font-size: 0.9rem; color: var(--nav-inactive); margin: 20px 0 8px 5px; font-weight: bold; text-transform: uppercase;
+        }
+        .settings-card { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); }
         body.dark-mode .settings-card { background: #1e1e1e; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        
+        .profile-container { display: flex; align-items: center; gap: 15px; }
+        .avatar-wrapper { position: relative; width: 60px; height: 60px; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
+        .avatar-upload { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .profile-info { flex: 1; }
+        .profile-input { width: 100%; border: none; background: transparent; border-bottom: 1px solid var(--border-color); padding: 5px 0; color: var(--text-color); font-size: 1rem; margin-bottom: 5px; }
+        .profile-input:focus { outline: none; border-color: var(--primary-color); }
+
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
         .setting-row:last-child { border-bottom: none; }
-        .setting-input { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); width: 110px; text-align: right; background: var(--card-bg); color: var(--text-color); }
+        .setting-label { font-size: 0.95rem; }
+        .setting-input { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); width: 100px; text-align: right; background: var(--card-bg); color: var(--text-color); }
+        .setting-select { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+
+        .color-picker { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+        .color-circle { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        .color-circle.active { transform: scale(1.2); border-color: var(--text-color); }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        .guide-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+        .guide-icon { font-size: 2rem; color: var(--primary-color); margin-bottom: 10px; text-align: center; display: block; }
+
+        /* --- CALCULATOR --- */
+        .calculator-container { padding: 15px; background: #000; border-radius: 20px; margin: 10px; }
+        #calcDisplay { width: 100%; height: 60px; font-size: 2rem; text-align: right; border: none; background: transparent; color: white; outline: none; }
+        .calculator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .calc-btn { height: 55px; border-radius: 28px; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
+        .btn-number { background: var(--calc-number); color: white; }
+        .btn-operator { background: var(--calc-operator); color: white; }
+        .btn-special { background: var(--calc-clear); color: black; }
+
+        /* --- NAV & MODAL --- */
         nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; height: 65px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); text-decoration: none; font-size: 0.75rem; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); text-decoration: none; font-size: 0.7rem; }
         .nav-item.active { color: var(--primary-color); }
-        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
+        
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: var(--card-bg); margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; }
+        .modal-content { background: var(--card-bg); margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; max-height: 85vh; overflow-y: auto; }
+        
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.95rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; background: var(--bg-color); color: var(--text-color); font-size: 1rem; }
+        
+        .time-select-container { display: flex; align-items: center; gap: 5px; }
+        .time-select-container select { flex: 1; text-align: center; }
+        .time-select-separator { font-weight: bold; font-size: 1.2rem; }
+
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-save { background: var(--primary-color); color: white; }
         .btn-delete { background: #ff4d4d; color: white; }
         .btn-cancel { background: #eee; color: #333; }
@@ -69,266 +161,682 @@
 
     <div id="calendar-screen" class="screen">
         <div class="calendar-header">
-            <button onclick="changeMonth(-1)" class="btn-cancel" style="padding: 5px 15px;">&lt;</button>
-            <div id="calendarTitle" style="font-weight: bold;"></div>
-            <button onclick="changeMonth(1)" class="btn-cancel" style="padding: 5px 15px;">&gt;</button>
-        </div>
-        <div class="calendar-grid">
-            <div class="calendar-day-head">CN</div><div class="calendar-day-head">T2</div><div class="calendar-day-head">T3</div><div class="calendar-day-head">T4</div><div class="calendar-day-head">T5</div><div class="calendar-day-head">T6</div><div class="calendar-day-head">T7</div>
+            <button id="prevMonth" class="btn-cancel" style="padding: 5px 15px;">&lt;</button>
+            <div id="calendarTitle" style="font-weight: bold;">2026/02</div>
+            <button id="nextMonth" class="btn-cancel" style="padding: 5px 15px;">&gt;</button>
         </div>
         <div id="calendarGrid" class="calendar-grid"></div>
+        
         <div class="daily-detail-card">
-            <div id="selectedDateLabel" style="font-weight: bold; margin-bottom: 5px; color: var(--primary-color);"></div>
+            <div id="selectedDateLabel" style="font-weight: bold; margin-bottom: 5px; color: var(--primary-color);">2026-02-02</div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span id="dayShiftText"></span>
-                <button class="btn-save" style="padding: 8px 15px; border-radius: 20px; font-size: 0.8rem;" onclick="openModal()">Sửa / Ghi chú</button>
+                <span id="dayShiftText" data-i18n="noShift">Chưa có ca làm</span>
+                <button class="btn-save" style="padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;" onclick="openModalFromDetail()" data-i18n="editMemo">Chỉnh sửa</button>
             </div>
             <div id="dayMemoText" class="detail-memo"></div>
         </div>
     </div>
 
     <div id="stats-screen" class="screen hidden" style="padding: 15px;">
-        <h3 data-i18n="monthlyStats">Thống kê tháng</h3>
-        <div id="statsContent" style="background: var(--primary-color); color:white; padding: 20px; border-radius: 12px; margin-bottom: 15px;"></div>
+        <h3 data-i18n="monthlyStats">月間統計</h3>
+        <div id="statsContent" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border-color);"></div>
+
+        <div class="calculator-container">
+            <input type="text" id="calcDisplay" readonly placeholder="0">
+            <div class="calculator-grid">
+                <button class="calc-btn btn-special" onclick="appendCalc('C')">C</button>
+                <button class="calc-btn btn-special" onclick="appendCalc('+/-')">+/-</button>
+                <button class="calc-btn btn-special" onclick="appendCalc('%')">%</button>
+                <button class="calc-btn btn-operator" onclick="appendCalc('/')">÷</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('7')">7</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('8')">8</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('9')">9</button>
+                <button class="calc-btn btn-operator" onclick="appendCalc('*')">×</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('4')">4</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('5')">5</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('6')">6</button>
+                <button class="calc-btn btn-operator" onclick="appendCalc('-')">−</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('1')">1</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('2')">2</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('3')">3</button>
+                <button class="calc-btn btn-operator" onclick="appendCalc('+')">+</button>
+                <button class="calc-btn btn-number" style="grid-column: span 2; text-align: left; padding-left: 25px;" onclick="appendCalc('0')">0</button>
+                <button class="calc-btn btn-number" onclick="appendCalc('.')">.</button>
+                <button class="calc-btn btn-operator" onclick="calculateResult()">=</button>
+            </div>
+        </div>
     </div>
 
     <div id="settings-screen" class="screen hidden" style="padding: 20px;">
-        <h3 data-i18n="settings">Cài đặt</h3>
+        <h3 data-i18n="settings">設定</h3>
+        
         <div class="settings-card">
-            <div class="setting-row">
-                <span data-i18n="hourlyWage">Lương/giờ cơ bản</span>
-                <input type="number" id="defaultWage" class="setting-input" onchange="saveSettings()">
-            </div>
-            <div class="setting-row">
-                <span data-i18n="nightWage">Phụ cấp ca đêm (%)</span>
-                <input type="number" id="nightWage" class="setting-input" onchange="saveSettings()">
-            </div>
-            <div class="setting-row">
-                <span data-i18n="overtimeWage">Hệ số tăng ca (VD: 1.25)</span>
-                <input type="number" id="overtimeWage" step="0.01" class="setting-input" onchange="saveSettings()">
-            </div>
-            <div class="setting-row">
-                <span data-i18n="nightStart">Bắt đầu ca đêm</span>
-                <input type="time" id="nightStart" class="setting-input" onchange="saveSettings()">
-            </div>
-            <div class="setting-row">
-                <span data-i18n="nightEnd">Kết thúc ca đêm</span>
-                <input type="time" id="nightEnd" class="setting-input" onchange="saveSettings()">
+            <div class="profile-container">
+                <div class="avatar-wrapper">
+                    <img src="https://via.placeholder.com/60" id="avatarImg" class="avatar-img">
+                    <label for="avatarInput" class="avatar-upload"><i class="fas fa-camera"></i></label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="updateAvatar(this)">
+                </div>
+                <div class="profile-info">
+                    <input type="text" id="profileName" class="profile-input" placeholder="Name" onchange="saveProfile()">
+                    <div style="display:flex; align-items:center;">
+                        <input type="number" id="profileAge" class="profile-input" placeholder="Age" style="width: 50px; margin-right:5px;" onchange="saveProfile()">
+                        <span style="font-size:0.8rem; color:#888;" data-i18n="ageLabel">tuổi</span>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <div class="settings-section-title" data-i18n="appearance">Giao diện</div>
         <div class="settings-card">
+            <div style="font-weight:bold; margin-bottom:10px;">
+                <i class="fas fa-palette"></i> <span data-i18n="themeColor">Theme Color</span>
+            </div>
+            <div class="color-picker" id="themePicker"></div>
+            
+            <div class="setting-row" style="margin-top:10px;">
+                <div class="setting-label" data-i18n="darkMode">Dark Mode</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
             <div class="setting-row">
-                <span>Ngôn ngữ / 言語</span>
-                <select id="langSelect" class="setting-input" onchange="changeLang(this.value)">
-                    <option value="vi">Tiếng Việt</option>
+                <div class="setting-label" data-i18n="language">Language</div>
+                <select id="langSelect" class="setting-select">
                     <option value="ja">日本語</option>
+                    <option value="en">English</option>
+                    <option value="vi">Tiếng Việt</option>
                 </select>
             </div>
+        </div>
+
+        <div class="settings-section-title" data-i18n="calendarSettings">Cài đặt lịch</div>
+        <div class="settings-card">
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="viewMode">Kiểu hiển thị</div>
+                <select class="setting-select" id="viewModeSelect" onchange="saveSettings()">
+                    <option value="month" data-i18n="viewMonth">Tháng</option>
+                    <option value="week" data-i18n="viewWeek">Tuần</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="startDay">Bắt đầu tuần</div>
+                <select class="setting-select" id="startDaySelect" onchange="saveSettings()">
+                    <option value="0" data-i18n="daySun">Chủ Nhật</option>
+                    <option value="1" data-i18n="dayMon">Thứ Hai</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="syncCalendar">Đồng bộ lịch ĐT</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="syncCalendarToggle" onchange="saveSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-section-title" data-i18n="wageSettings">Cài đặt ca làm & lương</div>
+        <div class="settings-card">
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="hourlyWage">Lương/giờ cơ bản</div>
+                <input type="number" id="defaultWage" class="setting-input" value="1100" onchange="saveSettings()">
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="nightWage">Lương ca đêm (+%)</div>
+                <input type="number" id="nightWage" class="setting-input" placeholder="25" value="25" onchange="saveSettings()">
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="overtimeWage">Lương tăng ca (x)</div>
+                <input type="number" id="overtimeWage" class="setting-input" placeholder="1.25" value="1.25" onchange="saveSettings()">
+            </div>
+            <div class="setting-row" style="flex-direction: column; align-items: flex-start;">
+                <div class="setting-label" style="margin-bottom: 5px;" data-i18n="nightTimeRange">Giờ ca đêm (Mặc định)</div>
+                <div style="display: flex; gap: 5px; width: 100%;">
+                    <input type="time" id="nightStart" class="setting-input" style="flex:1; text-align: center;" value="22:00" onchange="saveSettings()">
+                    <span style="align-self: center;">~</span>
+                    <input type="time" id="nightEnd" class="setting-input" style="flex:1; text-align: center;" value="05:00" onchange="saveSettings()">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section-title" data-i18n="notifications">Thông báo</div>
+        <div class="settings-card">
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="remindWork">Nhắc giờ đi làm</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="remindWorkToggle" onchange="saveSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="remindInput">Nhắc nhập ca</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="remindInputToggle" onchange="saveSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <div class="setting-label" data-i18n="notifyWorkday">Thông báo ngày làm</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="notifyWorkdayToggle" onchange="saveSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-card" onclick="switchScreen('guide')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <i class="fas fa-book-open"></i> <span data-i18n="userGuide" style="font-weight:bold; margin-left:10px;">User Guide</span>
+            </div>
+            <i class="fas fa-chevron-right" style="color:#ccc"></i>
+        </div>
+    </div>
+
+    <div id="guide-screen" class="screen hidden" style="padding: 20px;">
+        <div style="margin-bottom: 20px;">
+            <button class="btn-cancel" onclick="switchScreen('settings')" style="padding: 8px 15px;">
+                <i class="fas fa-arrow-left"></i> <span data-i18n="back">Back</span>
+            </button>
+        </div>
+        <h3 data-i18n="userGuide" style="margin-bottom: 20px;">User Guide</h3>
+        
+        <div class="guide-card">
+            <i class="fas fa-calendar-plus guide-icon"></i>
+            <h4 data-i18n="guideStep1Title">1. Thêm ca làm & Ghi chú</h4>
+            <p data-i18n="guideStep1Desc" style="font-size:0.9rem; color:#666;">Chạm vào ngày trên lịch. Nhập giờ làm, lương và ghi chú (Memo). Dashboard sẽ hiển thị thông tin ngay lập tức.</p>
+        </div>
+
+        <div class="guide-card">
+            <i class="fas fa-chart-pie guide-icon"></i>
+            <h4 data-i18n="guideStep2Title">2. Xem thống kê</h4>
+            <p data-i18n="guideStep2Desc" style="font-size:0.9rem; color:#666;">Chuyển sang tab Thống kê để xem tổng lương trong tháng và sử dụng máy tính tiện lợi.</p>
         </div>
     </div>
 </div>
 
 <nav>
-    <a href="javascript:void(0)" class="nav-item active" onclick="switchScreen('calendar', this)"><i class="fas fa-calendar-alt"></i><span data-i18n="navCalendar">Lịch</span></a>
-    <a href="javascript:void(0)" class="nav-item" onclick="switchScreen('stats', this)"><i class="fas fa-chart-bar"></i><span data-i18n="navStats">Thống kê</span></a>
-    <a href="javascript:void(0)" class="nav-item" onclick="switchScreen('settings', this)"><i class="fas fa-cog"></i><span data-i18n="navSettings">Cài đặt</span></a>
+    <a href="#" class="nav-item active" onclick="switchScreen('calendar')"><i class="fas fa-calendar-alt"></i><span data-i18n="navCalendar">カレンダー</span></a>
+    <a href="#" class="nav-item" onclick="switchScreen('stats')"><i class="fas fa-calculator"></i><span data-i18n="navStats">統計</span></a>
+    <a href="#" class="nav-item" onclick="switchScreen('settings')"><i class="fas fa-cog"></i><span data-i18n="navSettings">設定</span></a>
 </nav>
 
 <div id="shiftModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalDate" style="text-align:center;"></h3>
-        <div class="form-group"><label data-i18n="startTime">Bắt đầu</label><input type="time" id="startTimeInput"></div>
-        <div class="form-group"><label data-i18n="endTime">Kết thúc</label><input type="time" id="endTimeInput"></div>
-        <div class="form-group"><label data-i18n="breakTime">Nghỉ (phút)</label><input type="number" id="breakTimeInput"></div>
-        <div class="form-group"><label data-i18n="memo">Ghi chú</label><textarea id="memoInput" rows="3"></textarea></div>
+        <h3 id="modalDate" style="text-align:center; color:var(--primary-color); margin-bottom:20px;">2026/02/02</h3>
+        
+        <div class="form-group">
+            <label data-i18n="startTime">開始</label>
+            <div class="time-select-container">
+                <select id="startHour"></select>
+                <span class="time-select-separator">:</span>
+                <select id="startMin"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="endTime">終了</label>
+            <div class="time-select-container">
+                <select id="endHour"></select>
+                <span class="time-select-separator">:</span>
+                <select id="endMin"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="breakTime">休憩(分)</label>
+            <select id="breakTime">
+                <option value="0">0</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+                <option value="60">60 (1h)</option>
+                <option value="75">75 (1h15)</option>
+                <option value="90">90 (1h30)</option>
+                <option value="120">120 (2h)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="hourlyWage">時給 (Base)</label>
+            <input type="number" id="hourlyWage" value="1100">
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="memo">Memo</label>
+            <textarea id="memoInput" rows="3" placeholder="..."></textarea>
+        </div>
+        
         <div class="btn-group">
-            <button class="btn btn-save" onclick="saveShift()">Lưu</button>
-            <button class="btn btn-delete" onclick="deleteShift()">Xóa</button>
-            <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-save" id="saveShift" data-i18n="save">保存</button>
+            <button class="btn btn-delete" id="deleteShift" data-i18n="delete">削除</button>
+            <button class="btn btn-cancel" id="closeModal" data-i18n="cancel">キャンセル</button>
         </div>
     </div>
 </div>
 
 <script>
-    // PWA Registration
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
-    }
-
     let shiftData = JSON.parse(localStorage.getItem('shiftData')) || {};
-    let appSettings = JSON.parse(localStorage.getItem('appSettings')) || { 
-        defaultWage: 1100, nightWage: 25, overtimeWage: 1.25, 
-        nightStart: '22:00', nightEnd: '05:00', lang: 'vi' 
+    let appSettings = JSON.parse(localStorage.getItem('appSettings')) || {
+        defaultWage: 1100,
+        nightWage: 25, // %
+        overtimeWage: 1.25,
+        nightStart: '22:00',
+        nightEnd: '05:00',
+        viewMode: 'month',
+        startDay: '0',
+        syncCalendar: false,
+        remindWork: false,
+        remindInput: false,
+        notifyWorkday: false
     };
+    let userProfile = JSON.parse(localStorage.getItem('userProfile')) || { name: '', age: '', avatar: '' };
 
-    let currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth();
-    let selectedDate = new Date().toISOString().split('T')[0];
+    let currentLang = localStorage.getItem('language') || 'ja';
+    let currentTheme = localStorage.getItem('themeColor') || '#89CFF0';
+    let currentYear = 2026, currentMonth = 1;
+    let selectedDate = `${currentYear}-02-02`;
+
+    const themes = [
+        { color: '#89CFF0' }, { color: '#ff4d4d' }, { color: '#ffcc00' }, 
+        { color: '#4caf50' }, { color: '#ffb6c1' }, { color: '#9e9e9e' }, { color: '#333333' }
+    ];
 
     const translations = {
-        vi: { appTitle: "Quản lý ca làm", navCalendar: "Lịch", navStats: "Thống kê", navSettings: "Cài đặt", settings: "Cài đặt", monthlyStats: "Thống kê tháng", hourlyWage: "Lương cơ bản", nightWage: "Phụ cấp đêm (%)", overtimeWage: "Hệ số tăng ca", nightStart: "Bắt đầu đêm", nightEnd: "Kết thúc đêm", startTime: "Bắt đầu", endTime: "Kết thúc", breakTime: "Nghỉ (phút)", save: "Lưu", delete: "Xóa", cancel: "Hủy", totalWage: "Tổng lương", totalHours: "Tổng giờ", noShift: "Nghỉ", memo: "Ghi chú" },
-        ja: { appTitle: "シフト管理", navCalendar: "カレンダー", navStats: "統計", navSettings: "設定", settings: "設定", monthlyStats: "月間統計", hourlyWage: "時給", nightWage: "深夜手当(%)", overtimeWage: "残業手当", nightStart: "深夜開始", nightEnd: "深夜終了", startTime: "開始", endTime: "終了", breakTime: "休憩", save: "保存", delete: "削除", cancel: "キャンセル", totalWage: "合計給与", totalHours: "合計時間", noShift: "休み", memo: "メモ" }
+        ja: {
+            appTitle: "シフト管理", navCalendar: "カレンダー", navStats: "統計/電卓", navSettings: "設定",
+            settings: "設定", monthlyStats: "月間統計", hourlyWage: "時給 (基本)", startTime: "開始", 
+            endTime: "終了", breakTime: "休憩(分)", save: "保存", delete: "削除", cancel: "キャンセル", 
+            totalWage: "合計給与", totalHours: "合計時間", darkMode: "ダークモード", language: "言語",
+            noShift: "シフトなし", editMemo: "編集 / メモ", memo: "メモ", noMemoContent: "メモなし",
+            themeColor: "テーマカラー", userGuide: "使用説明書", back: "戻る",
+            guideStep1Title: "1. シフト追加 & メモ", guideStep1Desc: "カレンダーの日付をタップ。時間、給与、メモを入力すると、ダッシュボードに即座に表示されます。",
+            guideStep2Title: "2. 統計を確認", guideStep2Desc: "統計タブに切り替えて、今月の合計給与を確認したり、便利な電卓を使用したりできます。",
+            appearance: "外観", calendarSettings: "カレンダー設定", wageSettings: "給与・シフト設定", notifications: "通知",
+            viewMode: "表示モード", viewMonth: "月", viewWeek: "週", startDay: "週の開始日", daySun: "日曜日", dayMon: "月曜日",
+            syncCalendar: "カレンダー同期", nightWage: "深夜給 (+%)", overtimeWage: "残業代 (倍)", nightTimeRange: "深夜時間帯",
+            remindWork: "出勤通知", remindInput: "シフト入力通知", notifyWorkday: "勤務日通知", ageLabel: "歳"
+        },
+        vi: {
+            appTitle: "Quản lý ca làm", navCalendar: "Lịch", navStats: "Thống kê", navSettings: "Cài đặt",
+            settings: "Cài đặt", monthlyStats: "Thống kê tháng", hourlyWage: "Lương/giờ (Cơ bản)", startTime: "Bắt đầu", 
+            endTime: "Kết thúc", breakTime: "Nghỉ (phút)", save: "Lưu", delete: "Xóa", cancel: "Hủy", 
+            totalWage: "Tổng lương", totalHours: "Tổng giờ", darkMode: "Chế độ tối", language: "Ngôn ngữ",
+            noShift: "Chưa có ca làm", editMemo: "Sửa / Ghi chú", memo: "Ghi chú", noMemoContent: "Chưa có ghi chú",
+            themeColor: "Màu chủ đề", userGuide: "Hướng dẫn sử dụng", back: "Quay lại",
+            guideStep1Title: "1. Thêm ca & Ghi chú", guideStep1Desc: "Chạm vào ngày trên lịch. Nhập giờ làm, lương và ghi chú. Thông tin sẽ hiện ngay bên dưới.",
+            guideStep2Title: "2. Xem thống kê", guideStep2Desc: "Chuyển sang tab Thống kê để xem tổng lương tháng và dùng máy tính.",
+            appearance: "Giao diện", calendarSettings: "Cài đặt lịch", wageSettings: "Cài đặt ca làm & lương", notifications: "Thông báo",
+            viewMode: "Kiểu hiển thị", viewMonth: "Tháng", viewWeek: "Tuần", startDay: "Bắt đầu tuần", daySun: "Chủ Nhật", dayMon: "Thứ Hai",
+            syncCalendar: "Đồng bộ lịch ĐT", nightWage: "Lương ca đêm (+%)", overtimeWage: "Lương tăng ca (hệ số)", nightTimeRange: "Giờ ca đêm",
+            remindWork: "Nhắc giờ đi làm", remindInput: "Nhắc nhập ca", notifyWorkday: "Thông báo ngày làm", ageLabel: "tuổi"
+        },
+        en: {
+            appTitle: "Shift Manager", navCalendar: "Calendar", navStats: "Stats", navSettings: "Settings",
+            settings: "Settings", monthlyStats: "Monthly Stats", hourlyWage: "Wage/hr (Base)", startTime: "Start", 
+            endTime: "End", breakTime: "Break(m)", save: "Save", delete: "Delete", cancel: "Cancel", 
+            totalWage: "Total Wage", totalHours: "Total Hours", darkMode: "Dark Mode", language: "Language",
+            noShift: "No shift", editMemo: "Edit / Memo", memo: "Memo", noMemoContent: "No memo",
+            themeColor: "Theme Color", userGuide: "User Guide", back: "Back",
+            guideStep1Title: "1. Add Shift & Memo", guideStep1Desc: "Tap a date on the calendar. Enter hours, wage, and memo. Info appears instantly on dashboard.",
+            guideStep2Title: "2. View Stats", guideStep2Desc: "Switch to Stats tab to see total monthly wage and use the calculator.",
+            appearance: "Appearance", calendarSettings: "Calendar Settings", wageSettings: "Shift & Wage Settings", notifications: "Notifications",
+            viewMode: "View Mode", viewMonth: "Month", viewWeek: "Week", startDay: "Start Day", daySun: "Sunday", dayMon: "Monday",
+            syncCalendar: "Sync Calendar", nightWage: "Night Wage (+%)", overtimeWage: "Overtime Wage (x)", nightTimeRange: "Night Shift Time",
+            remindWork: "Work Reminder", remindInput: "Input Reminder", notifyWorkday: "Workday Notify", ageLabel: "years old"
+        }
     };
 
-    function timeToMin(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
-
-    function calculateExactWage(s) {
-        let sMin = timeToMin(s.start), eMin = timeToMin(s.end);
-        if (eMin < sMin) eMin += 1440;
-        const totalMin = eMin - sMin - s.break;
-        if (totalMin <= 0) return 0;
-
-        const nStartMin = timeToMin(appSettings.nightStart);
-        const nEndMin = timeToMin(appSettings.nightEnd) + (timeToMin(appSettings.nightEnd) < nStartMin ? 1440 : 0);
+    function populateTimeSelects() {
+        const hours = document.querySelectorAll('#startHour, #endHour');
+        const mins = document.querySelectorAll('#startMin, #endMin');
         
-        let nightMin = 0;
-        for (let m = sMin; m < eMin; m++) {
-            let curr = m % 1440;
-            let checkEnd = timeToMin(appSettings.nightEnd);
-            if (timeToMin(appSettings.nightStart) > checkEnd) {
-                if (curr >= timeToMin(appSettings.nightStart) || curr < checkEnd) nightMin++;
-            } else {
-                if (curr >= timeToMin(appSettings.nightStart) && curr < checkEnd) nightMin++;
+        hours.forEach(sel => {
+            sel.innerHTML = '';
+            for(let i=0; i<24; i++) {
+                const h = String(i).padStart(2,'0');
+                const opt = document.createElement('option');
+                opt.value = h; opt.text = h;
+                sel.appendChild(opt);
             }
-        }
-        // Giảm trừ thời gian nghỉ vào ca đêm (ước tính tỉ lệ)
-        const nightRatio = nightMin / (eMin - sMin);
-        const netNightMin = nightMin - (s.break * nightRatio);
+        });
 
-        const basePay = (totalMin / 60) * appSettings.defaultWage;
-        const nightExtra = (netNightMin / 60) * appSettings.defaultWage * (appSettings.nightWage / 100);
-        return Math.round(basePay + nightExtra);
+        mins.forEach(sel => {
+            sel.innerHTML = '';
+            ['00', '15', '30', '45'].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.text = m;
+                sel.appendChild(opt);
+            });
+        });
+    }
+
+    function applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+        });
+        document.getElementById('profileName').placeholder = currentLang === 'ja' ? '名前' : (currentLang === 'vi' ? 'Tên' : 'Name');
+        document.getElementById('profileAge').placeholder = currentLang === 'ja' ? '年齢' : (currentLang === 'vi' ? 'Tuổi' : 'Age');
+    }
+
+    function applyTheme(color) {
+        currentTheme = color;
+        document.documentElement.style.setProperty('--primary-color', color);
+        document.documentElement.style.setProperty('--primary-dark', color); 
+        localStorage.setItem('themeColor', color);
+        renderThemePicker();
+    }
+
+    function renderThemePicker() {
+        const p = document.getElementById('themePicker');
+        p.innerHTML = '';
+        themes.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `color-circle ${currentTheme === t.color ? 'active' : ''}`;
+            div.style.backgroundColor = t.color;
+            div.onclick = () => applyTheme(t.color);
+            p.appendChild(div);
+        });
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(screenId + '-screen').classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        if(screenId !== 'guide') {
+            const idx = screenId === 'calendar' ? 0 : (screenId === 'stats' ? 1 : 2);
+            document.querySelectorAll('.nav-item')[idx].classList.add('active');
+        }
+        
+        if (screenId === 'stats') updateStats();
+        if (screenId === 'settings') loadSettingsToUI();
+    }
+
+    function loadSettingsToUI() {
+        document.getElementById('profileName').value = userProfile.name;
+        document.getElementById('profileAge').value = userProfile.age;
+        if(userProfile.avatar) document.getElementById('avatarImg').src = userProfile.avatar;
+
+        document.getElementById('defaultWage').value = appSettings.defaultWage;
+        document.getElementById('nightWage').value = appSettings.nightWage;
+        document.getElementById('overtimeWage').value = appSettings.overtimeWage;
+        
+        document.getElementById('nightStart').value = appSettings.nightStart;
+        document.getElementById('nightEnd').value = appSettings.nightEnd;
+        
+        document.getElementById('viewModeSelect').value = appSettings.viewMode;
+        document.getElementById('startDaySelect').value = appSettings.startDay;
+        document.getElementById('syncCalendarToggle').checked = appSettings.syncCalendar;
+        
+        document.getElementById('remindWorkToggle').checked = appSettings.remindWork;
+        document.getElementById('remindInputToggle').checked = appSettings.remindInput;
+        document.getElementById('notifyWorkdayToggle').checked = appSettings.notifyWorkday;
+    }
+
+    function saveSettings() {
+        appSettings.defaultWage = parseInt(document.getElementById('defaultWage').value);
+        appSettings.nightWage = parseFloat(document.getElementById('nightWage').value);
+        appSettings.overtimeWage = parseFloat(document.getElementById('overtimeWage').value);
+        
+        appSettings.nightStart = document.getElementById('nightStart').value;
+        appSettings.nightEnd = document.getElementById('nightEnd').value;
+        
+        appSettings.viewMode = document.getElementById('viewModeSelect').value;
+        appSettings.startDay = document.getElementById('startDaySelect').value;
+        appSettings.syncCalendar = document.getElementById('syncCalendarToggle').checked;
+        
+        appSettings.remindWork = document.getElementById('remindWorkToggle').checked;
+        appSettings.remindInput = document.getElementById('remindInputToggle').checked;
+        appSettings.notifyWorkday = document.getElementById('notifyWorkdayToggle').checked;
+
+        localStorage.setItem('appSettings', JSON.stringify(appSettings));
+        renderCalendar();
+    }
+
+    function saveProfile() {
+        userProfile.name = document.getElementById('profileName').value;
+        userProfile.age = document.getElementById('profileAge').value;
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    }
+
+    function updateAvatar(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('avatarImg').src = e.target.result;
+                userProfile.avatar = e.target.result;
+                saveProfile();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
+        
+        const dayNames = currentLang === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : (currentLang === 'en' ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['日', '月', '火', '水', '木', '金', '土']);
+        
+        dayNames.forEach(d => {
+            const div = document.createElement('div'); div.className = 'calendar-day-head'; div.innerText = d; grid.appendChild(div);
+        });
+
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         document.getElementById('calendarTitle').innerText = `${currentYear}/${currentMonth + 1}`;
-        document.getElementById('monthDisplay').innerText = `${currentYear}/${currentMonth + 1}`;
+        document.getElementById('monthDisplay').innerText = `${currentYear}${currentLang==='ja'?'年':'/'}${currentMonth + 1}${currentLang==='ja'?'月':''}`;
 
         for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
         for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const dayDiv = document.createElement('div');
             dayDiv.className = 'calendar-day' + (dateStr === selectedDate ? ' selected-day' : '');
             dayDiv.innerHTML = `<div class="day-number">${d}</div>`;
             if (shiftData[dateStr]) {
-                dayDiv.innerHTML += `<div class="shift-info">${shiftData[dateStr].start}-${shiftData[dateStr].end}</div>`;
-                dayDiv.innerHTML += `<div class="wage-info">¥${calculateExactWage(shiftData[dateStr]).toLocaleString()}</div>`;
+                const s = shiftData[dateStr];
+                const wage = calculateExactWage(s);
+                dayDiv.innerHTML += `<div class="shift-info">${s.start}-${s.end}</div>`;
+                dayDiv.innerHTML += `<div class="wage-info">¥${wage.toLocaleString()}</div>`;
             }
-            dayDiv.onclick = () => { selectedDate = dateStr; renderCalendar(); updateDetail(); };
+            dayDiv.onclick = () => selectDay(dateStr);
             grid.appendChild(dayDiv);
         }
+        selectDay(selectedDate);
     }
 
-    function updateDetail() {
-        const s = shiftData[selectedDate];
-        document.getElementById('selectedDateLabel').innerText = selectedDate;
-        if(s) {
-            document.getElementById('dayShiftText').innerText = `${s.start} - ${s.end} (¥${calculateExactWage(s).toLocaleString()})`;
-            document.getElementById('dayMemoText').innerText = s.memo || "";
+    function selectDay(dateStr) {
+        selectedDate = dateStr;
+        document.getElementById('selectedDateLabel').innerText = dateStr;
+        const s = shiftData[dateStr];
+        const textEl = document.getElementById('dayShiftText');
+        const memoEl = document.getElementById('dayMemoText');
+        
+        if (s) {
+            const wage = calculateExactWage(s);
+            textEl.innerText = `${s.start} - ${s.end} (¥${wage.toLocaleString()})`;
+            textEl.removeAttribute('data-i18n');
+            memoEl.innerText = s.memo ? s.memo : translations[currentLang].noMemoContent;
+            memoEl.style.color = s.memo ? "var(--text-color)" : "#999";
         } else {
-            document.getElementById('dayShiftText').innerText = translations[appSettings.lang].noShift;
-            document.getElementById('dayMemoText').innerText = "";
+            textEl.setAttribute('data-i18n', 'noShift');
+            textEl.innerText = translations[currentLang].noShift;
+            memoEl.innerText = "";
+        }
+        
+        const grid = document.getElementById('calendarGrid');
+        if(grid.children.length > 7) {
+             Array.from(grid.children).forEach(c => {
+                 if(c.classList.contains('calendar-day')) c.classList.remove('selected-day');
+                 const dayNum = c.querySelector('.day-number');
+                 if(dayNum && parseInt(dayNum.innerText) === parseInt(dateStr.split('-')[2])) {
+                     c.classList.add('selected-day');
+                 }
+             });
         }
     }
 
-    function switchScreen(id, el) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id + '-screen').classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'stats') updateStats();
+    // --- LOGIC TÍNH LƯƠNG CHÍNH XÁC TUYỆT ĐỐI ---
+    function calculateExactWage(s) {
+        // 1. Phân tích giờ bắt đầu/kết thúc
+        const startParts = s.start.split(':').map(Number);
+        const endParts = s.end.split(':').map(Number);
+        let startMins = startParts[0] * 60 + startParts[1];
+        let endMins = endParts[0] * 60 + endParts[1];
+        if (endMins < startMins) endMins += 24 * 60; // Xử lý qua ngày hôm sau
+
+        const totalShiftMins = endMins - startMins;
+        if (totalShiftMins <= 0) return 0;
+
+        // 2. Lấy cài đặt hệ số và khung giờ đêm từ Settings
+        const baseWage = s.wage || appSettings.defaultWage;
+        const nightBonusPercent = (appSettings.nightWage || 0) / 100; // Ví dụ 25% -> 0.25
+        const overtimeMultiplier = appSettings.overtimeWage || 1.0;
+
+        const nsParts = (appSettings.nightStart || "22:00").split(':').map(Number);
+        const neParts = (appSettings.nightEnd || "05:00").split(':').map(Number);
+        const nightStartMins = nsParts[0] * 60 + nsParts[1];
+        const nightEndMins = neParts[0] * 60 + neParts[1];
+        
+        let nightMins = 0;
+        let dayMins = 0;
+        
+        // 3. Phân loại từng phút làm việc là Ngày hay Đêm
+        for(let m = startMins; m < endMins; m++) {
+            let currentDayMinute = m % 1440;
+            let isNight = false;
+            // Kiểm tra khung giờ đêm linh hoạt (xử lý được cả 22h-05h lẫn 01h-04h)
+            if (nightStartMins > nightEndMins) {
+                if (currentDayMinute >= nightStartMins || currentDayMinute < nightEndMins) isNight = true;
+            } else {
+                if (currentDayMinute >= nightStartMins && currentDayMinute < nightEndMins) isNight = true;
+            }
+            if (isNight) nightMins++; else dayMins++;
+        }
+
+        // 4. Trừ giờ nghỉ (phân bổ tỷ lệ giữa ngày và đêm để tính lương chuẩn nhất)
+        const breakMins = s.break || 0;
+        const netNightMins = nightMins - (breakMins * (nightMins / totalShiftMins));
+        const netDayMins = dayMins - (breakMins * (dayMins / totalShiftMins));
+        const netTotalMins = netNightMins + netDayMins;
+
+        // 5. Tính toán thành tiền với hệ số
+        // Lương cơ bản cho tổng thời gian thực tế
+        const basePay = netTotalMins * (baseWage / 60);
+        
+        // Phụ cấp đêm (chỉ tính phần dôi thêm của ca đêm, ví dụ +25%)
+        const nightExtraPay = netNightMins * (baseWage * nightBonusPercent / 60);
+        
+        // Phụ cấp tăng ca (áp dụng nếu tổng thời gian làm thực tế trên 8 tiếng = 480 phút)
+        let overtimeExtraPay = 0;
+        if (netTotalMins > 480) {
+            const overtimeMins = netTotalMins - 480;
+            overtimeExtraPay = overtimeMins * (baseWage * (overtimeMultiplier - 1) / 60);
+        }
+
+        // 6. Làm tròn kết quả cuối cùng (sử dụng Math.round để tránh sai số dấu phẩy động)
+        return Math.round(basePay + nightExtraPay + overtimeExtraPay);
     }
 
     function updateStats() {
-        let totalW = 0, totalH = 0;
-        const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}`;
-        Object.keys(shiftData).forEach(d => {
-            if(d.startsWith(monthPrefix)) {
-                totalW += calculateExactWage(shiftData[d]);
-                const s = shiftData[d];
-                let dur = timeToMin(s.end) - timeToMin(s.start);
-                if(dur < 0) dur += 1440;
-                totalH += (dur - s.break)/60;
+        let totalWage = 0, totalHours = 0;
+        const prefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        Object.keys(shiftData).forEach(date => {
+            if (date.startsWith(prefix)) {
+                const s = shiftData[date];
+                // Tính toán giờ làm hiển thị (Tổng giờ - Nghỉ)
+                const startParts = s.start.split(':').map(Number);
+                const endParts = s.end.split(':').map(Number);
+                let startMins = startParts[0] * 60 + startParts[1];
+                let endMins = endParts[0] * 60 + endParts[1];
+                if (endMins < startMins) endMins += 24 * 60;
+                
+                const hrs = (endMins - startMins - s.break) / 60;
+                totalHours += hrs; 
+                totalWage += calculateExactWage(s);
             }
         });
+        const t = translations[currentLang];
         document.getElementById('statsContent').innerHTML = `
-            <div style="font-size:0.9rem; opacity:0.9">${translations[appSettings.lang].totalHours}</div>
-            <div style="font-size:1.8rem; font-weight:bold; margin-bottom:10px">${totalH.toFixed(2)} h</div>
-            <div style="font-size:0.9rem; opacity:0.9">${translations[appSettings.lang].totalWage}</div>
-            <div style="font-size:1.8rem; font-weight:bold">¥ ${totalW.toLocaleString()}</div>
-        `;
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>${t.totalWage}:</span><span style="font-weight:bold; color:var(--primary-dark);">¥${totalWage.toLocaleString()}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>${t.totalHours}:</span><span style="font-weight:bold;">${totalHours.toFixed(2)}h</span></div>`;
     }
 
-    function openModal() {
-        const s = shiftData[selectedDate] || { start: "09:00", end: "17:00", break: 60, memo: "" };
+    function openModalFromDetail() {
         document.getElementById('modalDate').innerText = selectedDate;
-        document.getElementById('startTimeInput').value = s.start;
-        document.getElementById('endTimeInput').value = s.end;
-        document.getElementById('breakTimeInput').value = s.break;
-        document.getElementById('memoInput').value = s.memo;
+        
+        let s = shiftData[selectedDate] || { 
+            start: "09:00", 
+            end: "17:00", 
+            break: 60, 
+            wage: appSettings.defaultWage, 
+            memo: "" 
+        };
+
+        const [startH, startM] = s.start.split(':');
+        const [endH, endM] = s.end.split(':');
+
+        document.getElementById('startHour').value = startH;
+        document.getElementById('startMin').value = startM;
+        document.getElementById('endHour').value = endH;
+        document.getElementById('endMin').value = endM;
+        
+        document.getElementById('breakTime').value = s.break;
+        document.getElementById('hourlyWage').value = s.wage;
+        document.getElementById('memoInput').value = s.memo || "";
+        
         document.getElementById('shiftModal').style.display = 'block';
     }
 
-    function closeModal() { document.getElementById('shiftModal').style.display = 'none'; }
+    document.getElementById('saveShift').onclick = () => {
+        const startH = document.getElementById('startHour').value;
+        const startM = document.getElementById('startMin').value;
+        const endH = document.getElementById('endHour').value;
+        const endM = document.getElementById('endMin').value;
 
-    function saveShift() {
-        shiftData[selectedDate] = {
-            start: document.getElementById('startTimeInput').value,
-            end: document.getElementById('endTimeInput').value,
-            break: parseInt(document.getElementById('breakTimeInput').value) || 0,
+        shiftData[selectedDate] = { 
+            start: `${startH}:${startM}`, 
+            end: `${endH}:${endM}`, 
+            break: parseInt(document.getElementById('breakTime').value), 
+            wage: parseInt(document.getElementById('hourlyWage').value),
             memo: document.getElementById('memoInput').value
         };
         localStorage.setItem('shiftData', JSON.stringify(shiftData));
-        closeModal(); renderCalendar(); updateDetail();
-    }
-
-    function deleteShift() {
-        delete shiftData[selectedDate];
-        localStorage.setItem('shiftData', JSON.stringify(shiftData));
-        closeModal(); renderCalendar(); updateDetail();
-    }
-
-    function saveSettings() {
-        appSettings.defaultWage = parseInt(document.getElementById('defaultWage').value);
-        appSettings.nightWage = parseInt(document.getElementById('nightWage').value);
-        appSettings.overtimeWage = parseFloat(document.getElementById('overtimeWage').value);
-        appSettings.nightStart = document.getElementById('nightStart').value;
-        appSettings.nightEnd = document.getElementById('nightEnd').value;
-        localStorage.setItem('appSettings', JSON.stringify(appSettings));
+        document.getElementById('shiftModal').style.display = 'none';
         renderCalendar();
-    }
+        selectDay(selectedDate);
+    };
 
-    function changeMonth(step) {
-        currentMonth += step;
-        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
-        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
-        renderCalendar();
-    }
+    document.getElementById('deleteShift').onclick = () => { delete shiftData[selectedDate]; localStorage.setItem('shiftData', JSON.stringify(shiftData)); document.getElementById('shiftModal').style.display = 'none'; renderCalendar(); selectDay(selectedDate); };
+    document.getElementById('closeModal').onclick = () => document.getElementById('shiftModal').style.display = 'none';
+    document.getElementById('langSelect').onchange = (e) => { currentLang = e.target.value; localStorage.setItem('language', currentLang); applyTranslations(); renderCalendar(); };
+    document.getElementById('darkModeToggle').onchange = (e) => { document.body.classList.toggle('dark-mode', e.target.checked); localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); };
 
-    function changeLang(l) {
-        appSettings.lang = l;
-        localStorage.setItem('appSettings', JSON.stringify(appSettings));
-        location.reload();
+    function appendCalc(v) { 
+        const d = document.getElementById('calcDisplay'); 
+        if(v==='C') d.value=''; 
+        else if(v==='+/-') d.value = d.value ? (parseFloat(d.value)*-1) : '';
+        else if(v==='%') d.value = d.value ? (parseFloat(d.value)/100) : '';
+        else d.value += v; 
+    }
+    function calculateResult() { 
+        const d = document.getElementById('calcDisplay'); 
+        try { let r = eval(d.value.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')); d.value = Number.isInteger(r)?r:r.toFixed(2); } catch(e) { d.value='Error'; } 
     }
 
     window.onload = () => {
-        document.getElementById('defaultWage').value = appSettings.defaultWage;
-        document.getElementById('nightWage').value = appSettings.nightWage;
-        document.getElementById('overtimeWage').value = appSettings.overtimeWage;
-        document.getElementById('nightStart').value = appSettings.nightStart;
-        document.getElementById('nightEnd').value = appSettings.nightEnd;
-        document.getElementById('langSelect').value = appSettings.lang;
+        populateTimeSelects(); 
+        if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
+        document.getElementById('langSelect').value = currentLang;
+        document.getElementById('prevMonth').onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); };
+        document.getElementById('nextMonth').onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); };
         
-        // Apply translations
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (translations[appSettings.lang][key]) el.innerText = translations[appSettings.lang][key];
-        });
-
-        renderCalendar(); updateDetail();
+        loadSettingsToUI();
+        applyTheme(currentTheme); 
+        applyTranslations(); 
+        renderCalendar();
     };
 </script>
 </body>
