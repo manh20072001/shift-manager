@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shift Manager V9 - AI & Finance Stats</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #89CFF0; --primary-dark: #5ca0c4;
+            --text-color: #333; --bg-color: #f2f4f8; --card-bg: white;
+            --border-color: #ddd; --sunday-color: #ff4d4d; --saturday-color: #3366ff;
+            --danger-color: #ff4d4d; --success-color: #4caf50; --warning-color: #ff9f0a;
+            --nav-inactive: #999;
+        }
+        body.dark-mode {
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0;
+            --border-color: #333;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .container { flex: 1; overflow-y: auto; padding-bottom: 80px; max-width: 450px; margin: 0 auto; width: 100%; background-color: var(--card-bg); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        
+        /* Widget & Quick Palette */
+        .today-widget { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 15px; margin: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        .quick-palette { display: flex; gap: 10px; padding: 10px 15px; overflow-x: auto; background: var(--bg-color); border-bottom: 1px solid var(--border-color); }
+        .job-dot-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: var(--card-bg); border: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .job-dot-btn.active { border-color: var(--text-color); transform: scale(1.05); }
+        .job-dot-color { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+        /* Lịch 1/2 */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--card-bg); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); }
+        .calendar-day-head { text-align: center; padding: 8px 0; font-weight: bold; font-size: 0.7rem; background: #f8f9fa; color: #666; }
+        body.dark-mode .calendar-day-head { background: #2a2a2a; color: #aaa; }
+        .calendar-day { min-height: 48px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 2px; cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 1px; }
+        .day-number { font-weight: bold; font-size: 0.75rem; text-align: center; margin-bottom: 2px; }
+        .selected-day { background-color: rgba(137, 207, 240, 0.15) !important; box-shadow: inset 0 0 0 2px var(--primary-color); }
+        
+        /* Tags */
+        .shift-tag { font-size: 0.45rem; padding: 2px 3px; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: white; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .wage-tag { font-size: 0.5rem; color: var(--success-color); font-weight: bold; margin-top: 1px; text-align: center; }
+        .visa-warning-badge { font-size: 0.45rem; color: white; background: var(--danger-color); border-radius: 3px; padding: 1px 2px; margin-top: 1px; display: block; text-align: center; font-weight: bold; }
+
+        /* Card & Stats */
+        .card { margin: 12px; padding: 15px; border-radius: 12px; background: #f8f9fa; border: 1px solid var(--border-color); }
+        body.dark-mode .card { background: #262626; }
+        .visa-card { border: 2px solid var(--danger-color); background: rgba(255, 77, 77, 0.05); }
+        .progress-bar-bg { background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .progress-bar-fill { background: var(--success-color); height: 100%; width: 0%; transition: width 0.5s ease; }
+        
+        .stats-tabs { display: flex; background: var(--card-bg); border-bottom: 1px solid var(--border-color); }
+        .stats-tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-weight: bold; color: var(--nav-inactive); border-bottom: 2px solid transparent; transition: 0.3s; font-size: 0.9rem; }
+        .stats-tab.active { color: var(--success-color); border-bottom: 2px solid var(--success-color); }
+        
+        .circle-wrapper { display: flex; justify-content: center; margin: 25px 0; }
+        .circle-stat { width: 220px; height: 220px; border-radius: 50%; background: var(--card-bg); border: 10px solid #f2f4f8; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: inset 0 4px 15px rgba(0,0,0,0.03), 0 4px 15px rgba(0,0,0,0.05); }
+        body.dark-mode .circle-stat { border-color: #2a2a2a; }
+
+        /* AI Box */
+        .ai-box { border-left: 4px solid var(--warning-color); background: rgba(255, 159, 10, 0.08); padding: 15px; border-radius: 0 12px 12px 0; font-size: 0.85rem; margin: 12px; line-height: 1.5; }
+
+        /* Nav & Button */
+        nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; height: 70px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); text-decoration: none; font-size: 0.75rem; }
+        .nav-item.active { color: var(--primary-color); }
+        
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .modal-content { background: var(--card-bg); margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 16px; max-height: 80vh; overflow-y: auto; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+        
+        .btn { padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-save { background: var(--primary-color); color: white; width: 100%; }
+        .btn-outline { border: 1px solid var(--primary-color); background: none; color: var(--primary-color); width: 100%; }
+        .hidden { display: none !important; }
+    </style>
+
+    <link rel="manifest" href="manifest.json">
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-status-bar-style" content="default">
+            <meta name="apple-mobile-web-app-title" content="ShiftManager">
+            <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2311/2311904.png">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div id="appTitle">Shift Manager</div>
+        <div style="display: flex; gap: 15px;">
+            <i class="fas fa-moon" onclick="toggleDarkMode()" style="cursor: pointer;"></i>
+        </div>
+    </header>
+
+    <div id="calendar-screen" class="screen">
+        <div class="today-widget">
+            <div>
+                <div id="labelToday" style="font-size: 0.75rem;">Hôm nay</div>
+                <strong id="todayShiftName">Nghỉ</strong>
+            </div>
+            <i class="fas fa-id-card" style="opacity: 0.5; font-size: 1.5rem;"></i>
+        </div>
+
+        <div class="quick-palette" id="quickJobPalette"></div>
+
+        <div class="calendar-header">
+            <button class="btn" style="background: none; color: var(--text-color); padding: 5px 15px;" onclick="changeMonth(-1)">&lt;</button>
+            <div id="calendarMonthTitle" style="font-weight: bold;"></div>
+            <button class="btn" style="background: none; color: var(--text-color); padding: 5px 15px;" onclick="changeMonth(1)">&gt;</button>
+        </div>
+        
+        <div id="calendarGrid" class="calendar-grid"></div>
+        
+        <div class="card" id="dayDetailBox">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div id="selectedDateLabel" style="font-weight: bold; color: var(--primary-color); font-size: 1.1rem;"></div>
+                <button class="btn-save" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="openShiftModal()" id="btnAddShift">+ Thêm Ca</button>
+            </div>
+            <div id="dayShiftInfo">Trống</div>
+        </div>
+    </div>
+
+    <div id="stats-screen" class="screen hidden">
+        <div class="stats-tabs">
+            <div class="stats-tab active" id="tabMonth" onclick="setStatsMode('month')">Tháng</div>
+            <div class="stats-tab" id="tabYear" onclick="setStatsMode('year')">Năm</div>
+        </div>
+
+        <div id="monthStatsView">
+            <div class="card visa-card" id="visaAlertCard">
+                <h4 style="margin: 0 0 10px 0; color: var(--danger-color);"><i class="fas fa-exclamation-triangle"></i> <span id="visaTitle">Tình trạng Visa</span></h4>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                    <span id="curWeek">Tuần hiện tại:</span> <span id="valCurrentWeekHours" style="font-weight: bold;">0 / 28h</span>
+                </div>
+                <div class="progress-bar-bg"><div id="visaProgressBar" class="progress-bar-fill" style="background: var(--danger-color);"></div></div>
+                <div id="visaStatusText" style="font-size: 0.8rem; font-weight: bold; text-align: center;"></div>
+            </div>
+
+            <div class="card" style="text-align: center; padding-top: 5px;">
+                <div class="circle-wrapper">
+                    <div class="circle-stat">
+                        <div style="font-size: 0.85rem; color: #666; font-weight: bold;" id="lblCircleTitle">Lương đến hôm nay</div>
+                        <div style="font-size: 2.2rem; font-weight: bold; color: var(--text-color); margin: 5px 0;" id="valTotalSalaryCircle">¥0</div>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content: space-around; font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
+                    <div><span id="labelTotalHours">Thời gian làm:</span> <strong id="valTotalHoursCircle">0h00m</strong></div>
+                    <div><span id="labelNetSalary">Thực nhận:</span> <strong id="valNetSalary">¥0</strong></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                    <span id="labelGoal">Mục tiêu</span>
+                    <span id="valGoalPercent">0%</span>
+                </div>
+                <div class="progress-bar-bg"><div id="progressBar" class="progress-bar-fill"></div></div>
+                <div id="valGoalText" style="text-align: right; font-size: 0.8rem;">0 / 150,000</div>
+            </div>
+
+            <div class="card">
+                <h4 id="lblJobBreakdown" style="margin-top: 0; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">Thu nhập theo công việc</h4>
+                <div id="jobBreakdownList"></div>
+            </div>
+        </div>
+
+        <div id="yearStatsView" class="hidden" style="padding: 12px;">
+            <div id="yearStatsList"></div>
+        </div>
+
+        <div class="ai-box">
+            <strong style="color: var(--warning-color); font-size: 1rem;"><i class="fas fa-robot"></i> <span id="lblAiSuggest">Gợi ý AI</span>:</strong>
+            <div id="aiAdviceText" style="margin-top: 8px;">Đang phân tích...</div>
+        </div>
+    </div>
+
+    <div id="settings-screen" class="screen hidden">
+        <div class="card">
+            <div class="form-group">
+                <label id="labelLang">Ngôn ngữ</label>
+                <select id="selectLang" onchange="changeLanguage()">
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ja">日本語</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label id="labelDhsMode">Chế độ Du học sinh</label>
+                <select id="selectDhsMode" onchange="updateSettings()">
+                    <option value="true" id="optOn">Bật</option>
+                    <option value="false" id="optOff">Tắt</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4 id="labelJobManage" style="margin-top: 0;">Quản lý nơi làm</h4>
+            <div id="jobList"></div>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="openJobModal()">+ <span id="btnAddJob">Thêm Baito</span></button>
+        </div>
+
+        <div class="card">
+            <div class="form-group">
+                <label id="labelGoalInput">Mục tiêu tháng (¥)</label>
+                <input type="number" id="inputGoal" onchange="updateSettings()">
+            </div>
+            <div class="form-group" id="wrapVisaLimit">
+                <label id="labelVisaLimit">Hạn mức giờ/tuần</label>
+                <input type="number" id="inputVisaLimit" value="28" onchange="updateSettings()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav>
+    <a href="javascript:void(0)" class="nav-item active" onclick="showScreen('calendar')"><i class="fas fa-calendar"></i><span id="navCal">Lịch</span></a>
+    <a href="javascript:void(0)" class="nav-item" onclick="showScreen('stats')"><i class="fas fa-chart-line"></i><span id="navStats">Thống kê</span></a>
+    <a href="javascript:void(0)" class="nav-item" onclick="showScreen('settings')"><i class="fas fa-sliders"></i><span id="navSet">Cài đặt</span></a>
+</nav>
+
+<div id="modalShift" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle" style="text-align: center; margin-top: 0;">Nhập Ca</h3>
+        <input type="hidden" id="editShiftIdx">
+        <div class="form-group"><label id="lblModalJob">Nơi làm</label><select id="modalJobSelect"></select></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group"><label id="lblModalStart">Bắt đầu</label><input type="time" id="modalStart"></div>
+            <div class="form-group"><label id="lblModalEnd">Kết thúc</label><input type="time" id="modalEnd"></div>
+        </div>
+        <div class="form-group"><label id="lblModalBreak">Nghỉ (phút)</label><input type="number" id="modalBreak" value="60"></div>
+        <button class="btn btn-save" onclick="saveShift()" id="btnModalSave">Lưu</button>
+        <button class="btn" style="color:var(--danger-color); background:none; margin-top:10px; width:100%" onclick="deleteShift()" id="btnModalDel">Xóa ca này</button>
+        <button class="btn" style="color:#999; background:none; width:100%" onclick="closeModal('modalShift')" id="btnModalClose">Đóng</button>
+    </div>
+</div>
+
+<div id="modalJob" class="modal">
+    <div class="modal-content">
+        <h3 style="text-align: center; margin-top: 0;" id="modalJobTitle">Thêm Baito Mới</h3>
+        <input type="hidden" id="jobEditId">
+        <div class="form-group"><label id="lblJobName">Tên nơi làm</label><input type="text" id="jobName"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group"><label id="lblJobBase">Lương cơ bản (¥)</label><input type="number" id="jobBase" value="1200"></div>
+            <div class="form-group"><label id="lblJobNight">Lương đêm (¥)</label><input type="number" id="jobNight" value="1500"></div>
+        </div>
+        <div class="form-group">
+            <label id="lblJobColor">Màu hiển thị</label>
+            <input type="color" id="jobColor" value="#ff9f0a" style="height: 40px; padding: 2px;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group"><label id="lblJobDefStart">Giờ bắt đầu MĐ</label><input type="time" id="jobDefStart" value="09:00"></div>
+            <div class="form-group"><label id="lblJobDefEnd">Giờ kết thúc MĐ</label><input type="time" id="jobDefEnd" value="17:00"></div>
+        </div>
+        <div class="form-group"><label id="lblJobDefBreak">Nghỉ giải lao MĐ (phút)</label><input type="number" id="jobDefBreak" value="60"></div>
+        
+        <button class="btn btn-save" onclick="saveJob()" id="btnSaveJob">Lưu Công Việc</button>
+        <button class="btn" style="color:#999; background:none; width:100%; margin-top: 10px;" onclick="closeModal('modalJob')" id="btnCancelJob">Hủy</button>
+    </div>
+</div>
+
+<script>
+    const i18n = {
+        vi: { 
+            appTitle: "Shift Manager", navCal: "Lịch", navStats: "Thống kê", navSet: "Cài đặt", 
+            labelToday: "Hôm nay", todayOff: "Nghỉ 🎉", btnAddShift: "+ Thêm Ca", editTitle: "Sửa Ca", dayOff: "Không có ca làm", 
+            tabMonth: "Tháng", tabYear: "Năm", lblCircleTitle: "Lương đến hôm nay", labelNetSalary: "Thực nhận:", labelTotalHours: "Thời gian làm:", 
+            lblJobBreakdown: "Thu nhập theo công việc", labelGoal: "Mục tiêu", labelLang: "Ngôn ngữ", labelJobManage: "Quản lý nơi làm", btnAddJob: "Thêm Baito", 
+            labelGoalInput: "Mục tiêu tháng (¥)", labelVisaLimit: "Hạn mức giờ/tuần", labelDhsMode: "Chế độ Du học sinh", optOn: "Bật", optOff: "Tắt",
+            modalTitle: "Nhập Ca", lblModalJob: "Nơi làm", lblModalStart: "Bắt đầu", lblModalEnd: "Kết thúc", lblModalBreak: "Nghỉ (phút)", btnModalSave: "Lưu", btnModalDel: "Xóa ca này", btnModalClose: "Đóng",
+            modalJobTitle: "Thêm/Sửa Baito", lblJobName: "Tên nơi làm", lblJobBase: "Lương cơ bản (¥)", lblJobNight: "Lương đêm (¥)", lblJobColor: "Màu hiển thị", lblJobDefStart: "Giờ bắt đầu MĐ", lblJobDefEnd: "Giờ kết thúc MĐ", lblJobDefBreak: "Giải lao MĐ (phút)", btnSaveJob: "Lưu Công Việc", btnCancelJob: "Hủy",
+            quickEntry: "Nhập nhanh:", visaWarning: "VƯỢT {n}h/TUẦN! ❌", visaSafe: "An toàn ✅", 
+            confirmDel: "Xóa ca làm này?", msgKeepOneJob: "Phải giữ lại ít nhất 1 công việc!", msgDelJobConfirm: "Bạn muốn xóa công việc này?", msgInputNameBase: "Vui lòng nhập tên và lương cơ bản!",
+            visaTitle: "Tình trạng Visa", curWeek: "Tuần hiện tại:", labelTotalSalary: "Tổng thu nhập:", lblTax: "Thuế (Dự kiến 20%):",
+            lblAiSuggest: "Gợi ý AI", aiNeed: "Bạn cần làm thêm khoảng <strong>{h} giờ</strong> (Tương đương <strong>{s} ca</strong>) để đạt mục tiêu.", aiDone: "Tuyệt vời! Bạn đã vượt mục tiêu thu nhập đề ra. Cứ giữ vững phong độ nhé! 🎉"
+        },
+        ja: { 
+            appTitle: "シフト管理", navCal: "カレンダー", navStats: "統計", navSet: "設定", 
+            labelToday: "今日", todayOff: "休み 🎉", btnAddShift: "+ シフト追加", editTitle: "シフト編集", dayOff: "予定なし", 
+            tabMonth: "月", tabYear: "年", lblCircleTitle: "今日までの給料", labelNetSalary: "手取り:", labelTotalHours: "勤務時間:", 
+            lblJobBreakdown: "勤務先別収入", labelGoal: "目標", labelLang: "言語", labelJobManage: "勤務先管理", btnAddJob: "バイト追加", 
+            labelGoalInput: "目標金額 (¥)", labelVisaLimit: "週の労働制限 (時間)", labelDhsMode: "留学生モード", optOn: "オン", optOff: "オフ",
+            modalTitle: "シフト入力", lblModalJob: "勤務先", lblModalStart: "開始", lblModalEnd: "終了", lblModalBreak: "休憩 (分)", btnModalSave: "保存", btnModalDel: "削除", btnModalClose: "閉じる",
+            modalJobTitle: "バイト先の追加・編集", lblJobName: "勤務先名", lblJobBase: "基本時給 (¥)", lblJobNight: "深夜時給 (¥)", lblJobColor: "表示カラー", lblJobDefStart: "デフォルト開始", lblJobDefEnd: "デフォルト終了", lblJobDefBreak: "デフォルト休憩 (分)", btnSaveJob: "保存", btnCancelJob: "キャンセル",
+            quickEntry: "クイック入力:", visaWarning: "{n}h超過! ❌", visaSafe: "安全圏内 ✅", 
+            confirmDel: "削除しますか？", msgKeepOneJob: "最低でも1つの勤務先を残してください！", msgDelJobConfirm: "この勤務先を削除しますか？", msgInputNameBase: "勤務先名と時給を入力してください！",
+            visaTitle: "ビザ状況", curWeek: "今週:", labelTotalSalary: "総支給額:", lblTax: "税金 (推計20%):",
+            lblAiSuggest: "AIの提案", aiNeed: "目標達成まであと約<strong>{h}時間</strong>（<strong>{s}シフト</strong>）必要です。", aiDone: "素晴らしい！目標を達成しました。この調子で頑張りましょう！ 🎉"
+        },
+        en: { 
+            appTitle: "Shift Manager", navCal: "Calendar", navStats: "Stats", navSet: "Settings", 
+            labelToday: "Today", todayOff: "Day Off 🎉", btnAddShift: "+ Add Shift", editTitle: "Edit Shift", dayOff: "No shift", 
+            tabMonth: "Month", tabYear: "Year", lblCircleTitle: "Salary Up to Today", labelNetSalary: "Net Expected:", labelTotalHours: "Work Hours:", 
+            lblJobBreakdown: "Income by Job", labelGoal: "Goal", labelLang: "Language", labelJobManage: "Job Management", btnAddJob: "Add Job", 
+            labelGoalInput: "Monthly Goal (¥)", labelVisaLimit: "Weekly Limit (Hours)", labelDhsMode: "Intl. Student Mode", optOn: "ON", optOff: "OFF",
+            modalTitle: "Edit Shift", lblModalJob: "Workplace", lblModalStart: "Start", lblModalEnd: "End", lblModalBreak: "Break (min)", btnModalSave: "Save", btnModalDel: "Delete Shift", btnModalClose: "Close",
+            modalJobTitle: "Add/Edit Job", lblJobName: "Job Name", lblJobBase: "Base Wage (¥)", lblJobNight: "Night Wage (¥)", lblJobColor: "Display Color", lblJobDefStart: "Default Start", lblJobDefEnd: "Default End", lblJobDefBreak: "Default Break (min)", btnSaveJob: "Save Job", btnCancelJob: "Cancel",
+            quickEntry: "Quick Entry:", visaWarning: "OVER {n}h/WEEK! ❌", visaSafe: "Safe ✅", 
+            confirmDel: "Delete this shift?", msgKeepOneJob: "You must keep at least 1 job!", msgDelJobConfirm: "Delete this job?", msgInputNameBase: "Please enter job name and base wage!",
+            visaTitle: "Visa Status", curWeek: "Current Week:", labelTotalSalary: "Total Salary:", lblTax: "Tax (est. 20%):",
+            lblAiSuggest: "AI Suggestion", aiNeed: "You need ~<strong>{h} more hours</strong> (<strong>{s} shifts</strong>) to hit your goal.", aiDone: "Great! You hit your income goal. Keep up the good work! 🎉"
+        }
+    };
+
+    let db = JSON.parse(localStorage.getItem('shift_db_v9'));
+    if (!db) {
+        let oldDb = JSON.parse(localStorage.getItem('shift_db_v8'));
+        if (oldDb) { db = oldDb; } 
+        else {
+            db = {
+                shifts: {}, settings: { lang: 'vi', goal: 150000, visaLimit: 28, isDark: false, isDhsMode: true },
+                jobs: [{ id: 1, name: "Family Mart", base: 1200, night: 1500, color: "#ff9f0a", defStart: "17:00", defEnd: "22:00", defBreak: 0 }]
+            };
+        }
+    }
+    // Update missing value for older db versions
+    if (db.settings.isDhsMode === undefined) db.settings.isDhsMode = true;
+
+    let curDate = new Date();
+    let selDateStr = formatDate(new Date());
+    let activeQuickJobId = null;
+    let currentEditShiftId = null;
+    let statsMode = 'month';
+
+    function save() { localStorage.setItem('shift_db_v9', JSON.stringify(db)); }
+    function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+    function syncUI() {
+        const t = i18n[db.settings.lang] || i18n.vi;
+        for (let key in t) {
+            const el = document.getElementById(key);
+            if (el) el.innerHTML = t[key];
+        }
+        document.getElementById('jobName').placeholder = t.lblJobName;
+        document.body.classList.toggle('dark-mode', db.settings.isDark);
+        
+        // Cập nhật giá trị lên các thành phần Cài đặt
+        document.getElementById('selectLang').value = db.settings.lang;
+        document.getElementById('selectDhsMode').value = db.settings.isDhsMode ? 'true' : 'false';
+        document.getElementById('inputGoal').value = db.settings.goal;
+        document.getElementById('inputVisaLimit').value = db.settings.visaLimit;
+        
+        // Ẩn/Hiện vùng thiết lập giờ theo trạng thái DHS mode
+        document.getElementById('wrapVisaLimit').style.display = db.settings.isDhsMode ? 'block' : 'none';
+        
+        renderQuickPalette();
+        renderCalendar();
+        updateStats();
+        updateTodayWidget();
+        renderJobList();
+    }
+
+    function calcShift(s, job) {
+        let sM = s.start.split(':').reduce((h, m) => h * 60 + +m);
+        let eM = s.end.split(':').reduce((h, m) => h * 60 + +m);
+        if (eM <= sM) eM += 1440;
+        let dayM = 0, nightM = 0;
+        for (let i = sM; i < eM; i++) {
+            let clock = i % 1440;
+            if (clock >= 1320 || clock < 300) nightM++; else dayM++;
+        }
+        let br = s.break;
+        if (dayM >= br) dayM -= br; else { br -= dayM; dayM = 0; nightM -= br; }
+        return { hours: (dayM + nightM) / 60, total: Math.round((dayM/60*job.base) + (nightM/60*job.night)) };
+    }
+
+    function formatHours(decimalHours) {
+        let hrs = Math.floor(decimalHours);
+        let mins = Math.round((decimalHours - hrs) * 60);
+        return `${hrs}h${mins > 0 ? String(mins).padStart(2,'0') + 'm' : '00m'}`;
+    }
+
+    function getWeekHours(dateStr) {
+        let d = new Date(dateStr);
+        let day = d.getDay();
+        let diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        let monday = new Date(d.setDate(diff));
+        
+        let total = 0;
+        for(let i=0; i<7; i++) {
+            let target = new Date(monday);
+            target.setDate(monday.getDate() + i);
+            let tStr = formatDate(target);
+            if(db.shifts[tStr]) {
+                db.shifts[tStr].forEach(s => {
+                    let j = db.jobs.find(x => x.id == s.jobId) || db.jobs[0];
+                    total += calcShift(s, j).hours;
+                });
+            }
+        }
+        return total;
+    }
+
+    // --- QUICK PALETTE ---
+    function renderQuickPalette() {
+        const p = document.getElementById('quickJobPalette');
+        const t = i18n[db.settings.lang] || i18n.vi;
+        p.innerHTML = `<span style="font-size: 0.75rem; color: var(--nav-inactive); display:flex; align-items:center;">${t.quickEntry}</span>`;
+        
+        db.jobs.forEach(j => {
+            let btn = document.createElement('div');
+            btn.className = 'job-dot-btn' + (activeQuickJobId === j.id ? ' active' : '');
+            btn.innerHTML = `<span class="job-dot-color" style="background-color: ${j.color};"></span> ${j.name}`;
+            btn.onclick = () => { activeQuickJobId = (activeQuickJobId === j.id) ? null : j.id; renderQuickPalette(); };
+            p.appendChild(btn);
+        });
+    }
+
+    // --- LỊCH ---
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+        document.getElementById('calendarMonthTitle').innerText = `${curDate.getFullYear()} / ${curDate.getMonth() + 1}`;
+        
+        const heads = db.settings.lang === 'ja' ? ['月','火','水','木','金','土','日'] : (db.settings.lang === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['T2','T3','T4','T5','T6','T7','CN']);
+        heads.forEach((h, i) => {
+            let div = document.createElement('div'); div.className = 'calendar-day-head' + (i===6?' col-sun':'') + (i===5?' col-sat':'');
+            div.innerText = h; grid.appendChild(div);
+        });
+
+        let first = new Date(curDate.getFullYear(), curDate.getMonth(), 1).getDay();
+        let offset = first === 0 ? 6 : first - 1;
+        for(let i=0; i<offset; i++) grid.appendChild(document.createElement('div'));
+
+        let days = new Date(curDate.getFullYear(), curDate.getMonth() + 1, 0).getDate();
+        for(let d=1; d<=days; d++) {
+            let dateStr = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            let box = document.createElement('div');
+            box.className = 'calendar-day' + (dateStr === selDateStr ? ' selected-day' : '');
+            
+            let dayNum = new Date(curDate.getFullYear(), curDate.getMonth(), d).getDay();
+            let html = `<div class="day-number ${dayNum===0?'col-sun':(dayNum===6?'col-sat':'')}">${d}</div>`;
+            
+            if (db.shifts[dateStr] && db.shifts[dateStr].length > 0) {
+                let dTotal = 0;
+                db.shifts[dateStr].forEach(s => {
+                    const j = db.jobs.find(x => x.id == s.jobId) || db.jobs[0];
+                    const res = calcShift(s, j);
+                    dTotal += res.total;
+                    html += `<div class="shift-tag" style="background-color: ${j.color};">${j.name}</div>`;
+                });
+                
+                html += `<div class="wage-tag">¥${(dTotal/1000).toFixed(1)}k</div>`;
+                
+                let wh = getWeekHours(dateStr);
+                // CHỈ hiện cảnh báo nếu DHS mode Bật
+                if (db.settings.isDhsMode && wh > db.settings.visaLimit) { 
+                    html += `<div class="visa-warning-badge">! ${wh.toFixed(1)}h</div>`; 
+                }
+            }
+            box.innerHTML = html;
+            
+            box.onclick = () => { 
+                selDateStr = dateStr; 
+                if (activeQuickJobId) {
+                    if (!db.shifts[dateStr]) db.shifts[dateStr] = [];
+                    let existingIdx = db.shifts[dateStr].findIndex(s => s.jobId === activeQuickJobId);
+                    if (existingIdx >= 0) {
+                        db.shifts[dateStr].splice(existingIdx, 1);
+                        if(db.shifts[dateStr].length === 0) delete db.shifts[dateStr];
+                    } else {
+                        let j = db.jobs.find(x => x.id === activeQuickJobId);
+                        db.shifts[dateStr].push({ id: Date.now(), jobId: j.id, start: j.defStart, end: j.defEnd, break: j.defBreak });
+                    }
+                    save(); updateStats();
+                }
+                renderCalendar(); updateDayDetail(); updateTodayWidget(); // Đã thêm hàm cập nhật Widget Hôm nay
+            };
+            grid.appendChild(box);
+        }
+        updateDayDetail();
+    }
+
+    function updateDayDetail() {
+        document.getElementById('selectedDateLabel').innerText = selDateStr;
+        const shifts = db.shifts[selDateStr];
+        const info = document.getElementById('dayShiftInfo');
+        const t = i18n[db.settings.lang] || i18n.vi;
+        
+        if(shifts && shifts.length > 0) {
+            let html = '<div style="flex:1;">';
+            shifts.forEach(s => {
+                const j = db.jobs.find(x => x.id == s.jobId);
+                const res = calcShift(s, j);
+                html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; background: var(--bg-color); padding: 8px 10px; border-radius: 8px;">
+                    <div>
+                        <strong><span style="color:${j.color}">●</span> ${j?j.name:''}</strong><br>
+                        <small>${s.start} - ${s.end} | <strong style="color:var(--success-color);">¥${res.total.toLocaleString()}</strong></small>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.9rem; width: auto;" onclick="openShiftModal(${s.id})"><i class="fas fa-edit"></i></button>
+                </div>`;
+            });
+            html += '</div>';
+            info.innerHTML = html;
+        } else {
+            info.innerHTML = `<div style="text-align:center; padding: 15px; color: var(--nav-inactive);">${t.dayOff}</div>`;
+        }
+    }
+
+    // --- THỐNG KÊ (THÁNG / NĂM) ---
+    function setStatsMode(mode) {
+        statsMode = mode;
+        document.getElementById('tabMonth').classList.toggle('active', mode === 'month');
+        document.getElementById('tabYear').classList.toggle('active', mode === 'year');
+        document.getElementById('monthStatsView').classList.toggle('hidden', mode !== 'month');
+        document.getElementById('yearStatsView').classList.toggle('hidden', mode !== 'year');
+        updateStats();
+    }
+
+    function updateStats() {
+        const t = i18n[db.settings.lang] || i18n.vi;
+        
+        let totalMonthW = 0, totalMonthH = 0;
+        let jobStats = {};
+        db.jobs.forEach(j => jobStats[j.id] = { name: j.name, color: j.color, total: 0, hours: 0 });
+
+        const yearStr = String(curDate.getFullYear());
+        const monthStr = String(curDate.getMonth() + 1).padStart(2, '0');
+        const monthPrefix = `${yearStr}-${monthStr}`;
+
+        // Tính toán dữ liệu THÁNG
+        for(let d in db.shifts) {
+            if(d.startsWith(monthPrefix)) {
+                db.shifts[d].forEach(s => {
+                    let j = db.jobs.find(x => x.id == s.jobId) || db.jobs[0];
+                    let res = calcShift(s, j);
+                    totalMonthW += res.total; totalMonthH += res.hours;
+                    if(jobStats[j.id]) { jobStats[j.id].total += res.total; jobStats[j.id].hours += res.hours; }
+                });
+            }
+        }
+
+        // Render Vòng tròn Tháng
+        document.getElementById('valTotalSalaryCircle').innerText = `¥${totalMonthW.toLocaleString()}`;
+        document.getElementById('valTotalHoursCircle').innerText = formatHours(totalMonthH);
+        document.getElementById('valNetSalary').innerText = `¥${Math.round(totalMonthW*0.8).toLocaleString()}`;
+
+        const breakdownEl = document.getElementById('jobBreakdownList');
+        let breakdownHtml = '';
+        for(let jid in jobStats) {
+            let st = jobStats[jid];
+            if(st.total > 0 || st.hours > 0) {
+                breakdownHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom: 1px dashed var(--border-color);">
+                    <div style="font-weight: bold;"><span class="job-dot-color" style="background-color:${st.color}; margin-right: 5px;"></span> ${st.name}</div>
+                    <div style="text-align:right;">
+                        <strong style="color:var(--text-color); font-size:1.1rem;">¥${st.total.toLocaleString()}</strong><br>
+                        <small style="opacity:0.7;">${formatHours(st.hours)}</small>
+                    </div>
+                </div>`;
+            }
+        }
+        breakdownEl.innerHTML = breakdownHtml || `<div style="text-align:center; opacity:0.5; padding: 10px;">${t.dayOff}</div>`;
+
+        // Render Visa Alerts (Chỉ khi DHS = ON)
+        const visaCard = document.getElementById('visaAlertCard');
+        if (db.settings.isDhsMode) {
+            visaCard.style.display = 'block';
+            let curWeekH = getWeekHours(selDateStr);
+            let limit = db.settings.visaLimit || 28;
+            document.getElementById('valCurrentWeekHours').innerText = `${curWeekH.toFixed(1)} / ${limit}h`;
+            document.getElementById('visaProgressBar').style.width = Math.min(100, (curWeekH / limit) * 100) + '%';
+            const statusTxt = document.getElementById('visaStatusText');
+            if (curWeekH > limit) {
+                statusTxt.innerText = t.visaWarning.replace('{n}', limit);
+                statusTxt.style.color = 'var(--danger-color)';
+            } else {
+                statusTxt.innerText = t.visaSafe;
+                statusTxt.style.color = 'var(--success-color)';
+            }
+        } else {
+            visaCard.style.display = 'none';
+        }
+
+        // Render Goal Progress
+        let goal = db.settings.goal || 1;
+        let goalPct = Math.min(100, (totalMonthW / goal) * 100);
+        document.getElementById('valGoalPercent').innerText = Math.round(goalPct) + '%';
+        document.getElementById('progressBar').style.width = goalPct + '%';
+        document.getElementById('valGoalText').innerText = `${totalMonthW.toLocaleString()} / ${goal.toLocaleString()}`;
+
+        // Tính toán & Render dữ liệu NĂM
+        let years = {};
+        for(let d in db.shifts) {
+            let y = d.substring(0, 4);
+            if(!years[y]) years[y] = 0;
+            db.shifts[d].forEach(s => {
+                let j = db.jobs.find(x => x.id == s.jobId) || db.jobs[0];
+                years[y] += calcShift(s, j).total;
+            });
+        }
+
+        let yearHtml = '';
+        Object.keys(years).sort((a,b) => b - a).forEach(y => {
+            let total = years[y];
+            let tax = Math.round(total * 0.2); // Thuế 20%
+            let net = total - tax;
+            yearHtml += `
+                <div class="card" style="margin: 0 0 12px 0; border: 1px solid var(--primary-color);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--primary-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">${t.tabYear} ${y}</h4>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <span>${t.labelTotalSalary}</span> <strong>¥${total.toLocaleString()}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px; color: var(--danger-color);">
+                        <span>${t.lblTax}</span> <strong>- ¥${tax.toLocaleString()}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size: 1.1rem; color: var(--success-color); font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                        <span>${t.labelNetSalary}</span> <span>¥${net.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+        });
+        if(Object.keys(years).length === 0) {
+            yearHtml = `<div class="card" style="text-align:center; color: var(--nav-inactive);">${t.dayOff}</div>`;
+        }
+        document.getElementById('yearStatsList').innerHTML = yearHtml;
+
+        // Render AI Gợi ý
+        let targetGoal = statsMode === 'month' ? goal : (goal * 12);
+        let currentEarned = statsMode === 'month' ? totalMonthW : (years[yearStr] || 0);
+        let diff = targetGoal - currentEarned;
+        let avgWage = db.jobs.length > 0 ? db.jobs[0].base : 1000;
+        
+        let aiEl = document.getElementById('aiAdviceText');
+        if (diff <= 0) {
+            aiEl.innerHTML = t.aiDone;
+        } else {
+            let hNeeded = Math.ceil(diff / avgWage);
+            let sNeeded = Math.ceil(hNeeded / 5);
+            aiEl.innerHTML = t.aiNeed.replace('{h}', hNeeded).replace('{s}', sNeeded);
+        }
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id + '-screen').classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        if(id === 'stats') updateStats();
+    }
+
+    function changeMonth(step) { curDate.setMonth(curDate.getMonth() + step); renderCalendar(); }
+
+    // --- MODAL QUẢN LÝ ---
+    function openShiftModal(shiftId = null) {
+        currentEditShiftId = shiftId;
+        const t = i18n[db.settings.lang] || i18n.vi;
+        
+        document.getElementById('modalTitle').innerText = selDateStr + " - " + (shiftId ? t.editTitle : t.btnAddShift.replace('+ ', ''));
+        document.getElementById('modalJobSelect').innerHTML = db.jobs.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+        
+        if (shiftId) {
+            let s = db.shifts[selDateStr].find(x => x.id === shiftId);
+            document.getElementById('modalJobSelect').value = s.jobId;
+            document.getElementById('modalStart').value = s.start;
+            document.getElementById('modalEnd').value = s.end;
+            document.getElementById('modalBreak').value = s.break;
+            document.getElementById('btnModalDel').style.display = 'block';
+        } else {
+            let firstJob = db.jobs[0];
+            document.getElementById('modalJobSelect').value = firstJob.id;
+            document.getElementById('modalStart').value = firstJob.defStart;
+            document.getElementById('modalEnd').value = firstJob.defEnd;
+            document.getElementById('modalBreak').value = firstJob.defBreak;
+            document.getElementById('btnModalDel').style.display = 'none';
+        }
+        document.getElementById('modalShift').style.display = 'block';
+    }
+
+    function saveShift() {
+        if (!db.shifts[selDateStr]) db.shifts[selDateStr] = [];
+        let newData = {
+            jobId: parseInt(document.getElementById('modalJobSelect').value),
+            start: document.getElementById('modalStart').value,
+            end: document.getElementById('modalEnd').value,
+            break: parseInt(document.getElementById('modalBreak').value)
+        };
+
+        if (currentEditShiftId) {
+            let idx = db.shifts[selDateStr].findIndex(x => x.id === currentEditShiftId);
+            if(idx > -1) { newData.id = currentEditShiftId; db.shifts[selDateStr][idx] = newData; }
+        } else {
+            newData.id = Date.now();
+            db.shifts[selDateStr].push(newData);
+        }
+        save(); closeModal('modalShift'); syncUI();
+    }
+
+    function deleteShift() {
+        const t = i18n[db.settings.lang] || i18n.vi;
+        if(confirm(t.confirmDel)) {
+            db.shifts[selDateStr] = db.shifts[selDateStr].filter(x => x.id !== currentEditShiftId);
+            if (db.shifts[selDateStr].length === 0) delete db.shifts[selDateStr];
+            save(); closeModal('modalShift'); syncUI();
+        }
+    }
+
+    function renderJobList() {
+        document.getElementById('jobList').innerHTML = db.jobs.map(j => `
+            <div style="display:flex; justify-content:space-between; align-items: center; background:var(--bg-color); padding:10px; border: 1px solid var(--border-color); border-radius:8px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    <span class="job-dot-color" style="background-color: ${j.color}; width: 16px; height: 16px;"></span>
+                    <div>
+                        <strong>${j.name}</strong><br>
+                        <small>¥${j.base} | ${j.defStart}-${j.defEnd}</small>
+                    </div>
+                </div>
+                <i class="fas fa-trash" style="color:var(--danger-color); padding: 5px; cursor:pointer;" onclick="removeJob(${j.id})"></i>
+            </div>
+        `).join('');
+    }
+
+    function openJobModal() {
+        document.getElementById('jobEditId').value = "";
+        document.getElementById('jobName').value = "";
+        document.getElementById('jobColor').value = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        document.getElementById('modalJob').style.display = 'block';
+    }
+
+    function saveJob() {
+        const t = i18n[db.settings.lang] || i18n.vi;
+        let name = document.getElementById('jobName').value;
+        let base = parseInt(document.getElementById('jobBase').value);
+        let night = parseInt(document.getElementById('jobNight').value);
+        let color = document.getElementById('jobColor').value;
+        let defStart = document.getElementById('jobDefStart').value;
+        let defEnd = document.getElementById('jobDefEnd').value;
+        let defBreak = parseInt(document.getElementById('jobDefBreak').value);
+
+        if(!name || isNaN(base)) { alert(t.msgInputNameBase); return; }
+
+        db.jobs.push({ id: Date.now(), name, base, night, color, defStart, defEnd, defBreak });
+        save(); closeModal('modalJob'); renderJobList(); renderQuickPalette();
+    }
+
+    function removeJob(id) {
+        const t = i18n[db.settings.lang] || i18n.vi;
+        if(db.jobs.length <= 1) { alert(t.msgKeepOneJob); return; }
+        if(confirm(t.msgDelJobConfirm)) {
+            db.jobs = db.jobs.filter(x => x.id != id);
+            if(activeQuickJobId == id) activeQuickJobId = null;
+            save(); renderJobList(); renderQuickPalette(); renderCalendar();
+        }
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
+    function updateSettings() { 
+        db.settings.goal = parseInt(document.getElementById('inputGoal').value) || 150000; 
+        db.settings.visaLimit = parseInt(document.getElementById('inputVisaLimit').value) || 28; 
+        db.settings.isDhsMode = document.getElementById('selectDhsMode').value === 'true';
+        
+        save(); 
+        document.getElementById('wrapVisaLimit').style.display = db.settings.isDhsMode ? 'block' : 'none';
+        updateStats(); 
+        renderCalendar();
+    }
+    
+    function changeLanguage() { db.settings.lang = document.getElementById('selectLang').value; save(); syncUI(); }
+    function toggleDarkMode() { db.settings.isDark = !db.settings.isDark; save(); syncUI(); }
+    
+    function updateTodayWidget() {
+        const today = formatDate(new Date());
+        const shifts = db.shifts[today];
+        const el = document.getElementById('todayShiftName');
+        const t = i18n[db.settings.lang] || i18n.vi;
+        if(shifts && shifts.length > 0) {
+            el.innerHTML = shifts.map(s => {
+                const j = db.jobs.find(x => x.id == s.jobId) || db.jobs[0];
+                return `<span style="color:${j.color}">●</span> ${j.name}: ${s.start} - ${s.end}`;
+            }).join('<br>');
+        } else { el.innerText = t.todayOff; }
+    }
+
+    window.onload = syncUI;
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker đã đăng ký!', reg))
+        .catch(err => console.log('Lỗi đăng ký Service Worker:', err));
+    });
+  }
+</script>
+</body>
+</html>
